@@ -1,13 +1,13 @@
 import { createBrowserRouter } from "react-router-dom";
 import { UserOutlined, DashboardOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import ErrorPage from "../pages/error-page";
-import ManagerLayout from "../layout/ManagerLayout";
-import Login from "../pages/login/index";
-import Dashboard from "../pages/dashboard/index";
-import User from "../pages/user/index";
-import Role from "../pages/role/index";
-import Index from "../pages/index-page";
+import ErrorPage from "@pages/error-page";
+import ManagerLayout from "@/layout/ManagerLayout";
+import Login from "@pages/login";
+import Dashboard from "@pages/dashboard";
+import User from "@pages/user";
+import Role from "@pages/role";
+import Index from "@pages/index-page";
 
 const routerConfig = [
   {

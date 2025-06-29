@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import { Button, Layout, Menu, theme } from "antd";
 import { useLocation, Outlet } from "react-router-dom";
-import { generateMenuItems, routerConfig } from "../router/config";
-import useTitleSetter from "../hook/useTitleSetter";
+import { generateMenuItems, routerConfig } from "@/router/config";
+import useTitleSetter from "@/hook/useTitleSetter";
 const { Header, Sider, Content, Footer } = Layout;
 
 const ManagerLayout = () => {

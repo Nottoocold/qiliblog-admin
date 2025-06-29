@@ -9,7 +9,7 @@ import {
   Divider,
   notification,
 } from "antd";
-import useTitleSetter from "../../hook/useTitleSetter";
+import useTitleSetter from "@/hook/useTitleSetter";
 import { createStyles, css } from "antd-style";
 
 const useStyles = createStyles(({ token }) => ({
@@ -165,18 +165,18 @@ const Login = () => {
 
         <Form
           name="login"
-          initialValues={{ remember: true }}
+          initialValues={{}}
           onFinish={onFinish}
           className={styles.loginForm}
           size="large"
         >
           <Form.Item
-            name="username"
+            name="email"
             rules={[{ required: true, message: "请输入您的用户名!" }]}
           >
             <Input
               prefix={<UserOutlined />}
-              placeholder="用户名"
+              placeholder="邮箱"
               allowClear
               autoFocus
             />
@@ -194,15 +194,6 @@ const Login = () => {
           </Form.Item>
 
           <Form.Item>
-            <Form.Item name="remember" valuePropName="checked" noStyle>
-              <Checkbox>记住我</Checkbox>
-            </Form.Item>
-            <a style={{ float: "right" }} href="#">
-              忘记密码?
-            </a>
-          </Form.Item>
-
-          <Form.Item>
             <Button
               type="primary"
               htmlType="submit"
@@ -217,7 +208,7 @@ const Login = () => {
             <span>
               还没有账号? <a>立即注册</a>
             </span>
-            <a>访问公开博客</a>
+            <a>忘记密码?</a>
           </div>
         </Form>
 
