@@ -1,5 +1,3 @@
-export type LoginType = 'account' | 'phone';
-
 type LoginByPhoneParams = {
   phone: string;
   code: string;

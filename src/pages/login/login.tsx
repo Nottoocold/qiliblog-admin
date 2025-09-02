@@ -9,11 +9,11 @@ import {
   WeiboOutlined,
 } from '@ant-design/icons';
 import styles from './login.module.less';
-import type { LoginParams, LoginType } from '@/types/login';
+import type { LoginParams } from '@/types/login';
 
 const LoginPage = () => {
   const [form] = Form.useForm();
-  const [activeTab, setActiveTab] = useState<LoginType>('account');
+  const [activeTab, setActiveTab] = useState<string>('account');
   const [countdown, setCountdown] = useState<number>(0);
   const [loading, setLoading] = useState(false);
 
@@ -65,7 +65,7 @@ const LoginPage = () => {
       <div className={styles.formWrapper}>
         <Tabs
           activeKey={activeTab}
-          onChange={key => setActiveTab(key as LoginType)}
+          onChange={setActiveTab}
           centered
           items={[
             {

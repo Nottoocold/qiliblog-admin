@@ -7,7 +7,15 @@ const router = createBrowserRouter(routes);
 
 const App = () => {
   return (
-    <ConfigProvider>
+    <ConfigProvider
+      theme={{
+        components: {
+          Layout: {
+            headerHeight: 64,
+          },
+        },
+      }}
+    >
       <RouterProvider router={router} />
     </ConfigProvider>
   );
