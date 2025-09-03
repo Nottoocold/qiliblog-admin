@@ -1,16 +1,9 @@
-import type { RouteObject } from 'react-router-dom';
-import Login from '../pages/login/login.tsx';
-import ErrorPage from '../pages/ErrorPage.tsx';
-import ManagerLayout from '@/layout/managerLayout.tsx';
-import type { ItemType } from 'antd/es/menu/interface';
-
-export type RouterItem = RouteObject & {
-  meta?: ItemType & {
-    hideInMenu?: boolean;
-    hideInBreadcrumb?: boolean;
-  };
-  children?: RouterItem[];
-};
+import Login from '@/pages/login/login.tsx';
+import ErrorPage from '@/pages/ErrorPage.tsx';
+import Home from '@/pages/home/home.tsx';
+import { HomeOutlined } from '@ant-design/icons';
+import type { RouterItem } from '@/types/route';
+import ProtectManagerLayout from '@/layout/ProtectManagerLayout';
 
 const routes: RouterItem[] = [
   {
@@ -25,14 +18,33 @@ const routes: RouterItem[] = [
   },
   {
     path: '/',
-    element: <ManagerLayout />,
+    element: <ProtectManagerLayout />,
     errorElement: <ErrorPage />,
     meta: {
-      key: 'home',
+      key: 'root',
       title: '首页',
-      hideInMenu: false,
-      hideInBreadcrumb: false,
+      hideInMenu: true,
+      hideInBreadcrumb: true,
     },
+    children: [
+      {
+        index: true,
+        element: <Home />,
+        errorElement: <ErrorPage />,
+      },
+      {
+        path: '/home',
+        element: <Home />,
+        errorElement: <ErrorPage />,
+        meta: {
+          key: 'home',
+          title: '首页',
+          icon: <HomeOutlined />,
+          hideInMenu: false,
+          hideInBreadcrumb: false,
+        },
+      },
+    ],
   },
 ];
 

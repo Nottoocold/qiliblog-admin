@@ -1,12 +1,8 @@
 import { Outlet } from 'react-router-dom';
 import React, { useState } from 'react';
-import {
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  UploadOutlined,
-  UserOutlined,
-  VideoCameraOutlined,
-} from '@ant-design/icons';
+import routes from '@/router/router';
+import { generateMenus } from '@/utils/menuUtils';
+import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { Button, Layout, Menu, Breadcrumb, theme } from 'antd';
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -27,34 +23,15 @@ export default function ManagerLayout() {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
-  console.log(theme.useToken());
+
+  const menus = generateMenus(routes);
+  console.table(menus);
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider trigger={null} collapsible collapsed={collapsed}>
         <div className="logo" />
-        <Menu
-          theme="dark"
-          mode="inline"
-          defaultSelectedKeys={['1']}
-          items={[
-            {
-              key: '1',
-              icon: <UserOutlined />,
-              label: 'nav 1',
-            },
-            {
-              key: '2',
-              icon: <VideoCameraOutlined />,
-              label: 'nav 2',
-            },
-            {
-              key: '3',
-              icon: <UploadOutlined />,
-              label: 'nav 3',
-            },
-          ]}
-        />
+        <Menu theme="dark" mode="inline" defaultSelectedKeys={[menus[0].key]} items={menus} />
       </Sider>
       <Layout>
         <Header style={{ padding: 0, background: colorBgContainer }}>
@@ -85,6 +62,7 @@ export default function ManagerLayout() {
               flex: 1,
               overflowY: 'auto',
               overflowX: 'hidden',
+              padding: 12,
             }}
           >
             <Outlet />

@@ -10,12 +10,17 @@ import {
 } from '@ant-design/icons';
 import styles from './login.module.less';
 import type { LoginParams } from '@/types/login';
+import * as tokenUtils from '@/utils/tokenUtils';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
   const [form] = Form.useForm();
   const [activeTab, setActiveTab] = useState<string>('account');
   const [countdown, setCountdown] = useState<number>(0);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = decodeURIComponent(location.state?.from || '/');
 
   // 获取验证码倒计时
   const getVerificationCode = () => {
@@ -40,7 +45,9 @@ const LoginPage = () => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
+      tokenUtils.setToken('abcabcwsad1231', 'raw');
       form.resetFields();
+      navigate(from, { replace: true });
       message.success('登录成功');
     }, 1000);
   };

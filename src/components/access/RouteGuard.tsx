@@ -1,0 +1,42 @@
+import { validateAuth } from '@/utils/authUtils';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+const RouteGuard = ({ children }: { children: React.ReactNode }) => {
+  const [isValid, setisValid] = useState<boolean | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  console.log(location.pathname, 'need to be protected');
+
+  useEffect(() => {
+    let isMounted = true;
+    validateAuth().then(res => {
+      if (isMounted) {
+        setisValid(res);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isValid === false) {
+      navigate('/login', { replace: true, state: { from: encodeURIComponent(location.pathname) } });
+    }
+  }, [isValid]);
+
+  if (isValid == null) {
+    return <div>loading...</div>;
+  }
+  if (isValid === true) {
+    return children;
+  }
+  // 此处返回null, 实际跳转操作在useEffect中完成，避免了在渲染阶段跳转，导致组件渲染异常
+  // react的渲染过程：1. render阶段，2. commit阶段，3. commit阶段结束后，会触发useEffect
+  // react的渲染过程必须是纯函数，不能有副作用，所以不能在render阶段跳转，否则会警告⚠️
+  return null;
+};
+
+export default RouteGuard;
