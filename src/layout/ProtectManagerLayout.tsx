@@ -1,5 +1,5 @@
-import RouteGuard from '@/components/access/RouteGuard';
-import ManagerLayout from './managerLayout';
+import RouteGuard from '@/components/Access/RouteGuard';
+import ManagerLayout from './ManagerLayout';
 
 const ProtectManagerLayout = () => {
   return (

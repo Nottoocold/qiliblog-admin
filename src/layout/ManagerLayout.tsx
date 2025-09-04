@@ -34,7 +34,14 @@ export default function ManagerLayout() {
         <Menu theme="dark" mode="inline" defaultSelectedKeys={[menus[0].key]} items={menus} />
       </Sider>
       <Layout>
-        <Header style={{ padding: 0, background: colorBgContainer }}>
+        <Header
+          style={{
+            padding: 0,
+            background: colorBgContainer,
+            display: 'block',
+            position: 'relative',
+          }}
+        >
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
