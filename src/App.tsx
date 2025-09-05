@@ -16,7 +16,7 @@ const App = () => {
         },
       }}
     >
-      <AntdApp>
+      <AntdApp style={{ height: '100%' }}>
         <RouterProvider router={router} />
       </AntdApp>
     </ConfigProvider>

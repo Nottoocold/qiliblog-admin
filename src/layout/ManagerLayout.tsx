@@ -4,6 +4,7 @@ import routes from '@/router/router';
 import { generateMenus } from '@/utils/menuUtils';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { Button, Layout, Menu, Breadcrumb, theme } from 'antd';
+import RightContent from '@/components/RightContent/RightContent';
 
 const { Header, Sider, Content, Footer } = Layout;
 
@@ -13,7 +14,8 @@ const contentStyle: React.CSSProperties = {
   // margin: '24px 16px',
   margin: 0,
   padding: 24,
-  overflow: 'hidden',
+  overflowX: 'hidden',
+  overflowY: 'hidden',
   display: 'flex',
   flexDirection: 'column',
 };
@@ -30,7 +32,7 @@ export default function ManagerLayout() {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider trigger={null} collapsible collapsed={collapsed}>
-        <div className="logo" />
+        <div style={{ height: 32, margin: 16, textAlign: 'center' }} />
         <Menu theme="dark" mode="inline" defaultSelectedKeys={[menus[0].key]} items={menus} />
       </Sider>
       <Layout>
@@ -38,10 +40,15 @@ export default function ManagerLayout() {
           style={{
             padding: 0,
             background: colorBgContainer,
-            display: 'block',
-            position: 'relative',
+            position: 'sticky',
+            top: 0,
+            zIndex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
           }}
         >
+          {/* 左边内容 */}
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
@@ -52,12 +59,14 @@ export default function ManagerLayout() {
               height: 64,
             }}
           />
+          {/* 中间留空 */}
+          <div style={{ flex: 1 }} />
+          {/* 右边内容 */}
+          <div style={{ marginRight: 16 }}>
+            <RightContent />
+          </div>
         </Header>
-        <Content
-          style={{
-            ...contentStyle,
-          }}
-        >
+        <Content style={contentStyle}>
           <Breadcrumb
             items={[{ title: 'Home' }, { title: 'List' }, { title: 'App' }]}
             style={{ margin: '0 0 16px 0' }}
@@ -75,7 +84,9 @@ export default function ManagerLayout() {
             <Outlet />
           </div>
         </Content>
-        <Footer style={footerStyle}>Ant Design ©2018 Created by Ant UED</Footer>
+        <Footer style={footerStyle}>
+          Ant Design ©{new Date().getFullYear()} Created by Ant UED.
+        </Footer>
       </Layout>
     </Layout>
   );
