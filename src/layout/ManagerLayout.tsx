@@ -53,7 +53,7 @@ export default function ManagerLayout() {
           theme="light"
           mode="inline"
           onClick={menuClick}
-          defaultSelectedKeys={[menus[0].key]}
+          defaultSelectedKeys={[location.pathname]}
           items={menus}
         />
       </Sider>
