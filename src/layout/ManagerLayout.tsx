@@ -1,9 +1,9 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
 import routes from '@/router/router';
 import menuUtils from '@/utils/menuUtils';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
-import { Button, Layout, Menu, Breadcrumb, theme } from 'antd';
+import { Button, Layout, Menu, Breadcrumb, theme, type MenuProps } from 'antd';
 import RightContent from '@/components/RightContent/RightContent';
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -22,18 +22,40 @@ const contentStyle: React.CSSProperties = {
 
 export default function ManagerLayout() {
   const [collapsed, setCollapsed] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
   const menus = menuUtils.generateMenus(routes);
-  console.table(menus);
+  console.log('render menus:', menus);
+
+  const menuClick: MenuProps['onClick'] = info => {
+    console.log('菜单点击:', info);
+    if (info.key !== location.pathname) {
+      console.log('当前路径:', location.pathname);
+      console.log('跳转:', info.key);
+      navigate(info.key);
+    }
+  };
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider trigger={null} collapsible collapsed={collapsed}>
+      <Sider
+        trigger={null}
+        collapsible
+        collapsed={collapsed}
+        style={{ background: colorBgContainer }}
+      >
         <div style={{ height: 32, margin: 16, textAlign: 'center' }} />
-        <Menu theme="dark" mode="inline" defaultSelectedKeys={[menus[0].key]} items={menus} />
+        <Menu
+          theme="light"
+          mode="inline"
+          onClick={menuClick}
+          defaultSelectedKeys={[menus[0].key]}
+          items={menus}
+        />
       </Sider>
       <Layout>
         <Header

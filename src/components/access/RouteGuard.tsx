@@ -1,6 +1,7 @@
 import authUtils from '@/utils/authUtils';
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import ScreenLoading from '@/components/ScreenLoading/ScreenLoading';
 
 const RouteGuard = ({ children }: { children: React.ReactNode }) => {
   const [isValid, setisValid] = useState<boolean | null>(null);
@@ -28,7 +29,7 @@ const RouteGuard = ({ children }: { children: React.ReactNode }) => {
   }, [isValid, navigate, location]);
 
   if (isValid == null) {
-    return <div>loading...</div>;
+    return <ScreenLoading />;
   }
   if (isValid === true) {
     return children;
