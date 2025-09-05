@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 import styles from './login.module.less';
 import type { LoginParams } from '@/types/login';
-import * as tokenUtils from '@/utils/tokenUtils';
+import tokenUtils from '@/utils/tokenUtils';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {

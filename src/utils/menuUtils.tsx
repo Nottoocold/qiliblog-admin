@@ -23,4 +23,4 @@ const generateMenus = (routes: RouterItem[]): MenuItem[] => {
     .filter(item => Boolean(item.key));
 };
 
-export { generateMenus };
+export default { generateMenus };

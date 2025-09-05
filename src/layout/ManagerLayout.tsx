@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import React, { useState } from 'react';
 import routes from '@/router/router';
-import { generateMenus } from '@/utils/menuUtils';
+import menuUtils from '@/utils/menuUtils';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { Button, Layout, Menu, Breadcrumb, theme } from 'antd';
 import RightContent from '@/components/RightContent/RightContent';
@@ -26,7 +26,7 @@ export default function ManagerLayout() {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
-  const menus = generateMenus(routes);
+  const menus = menuUtils.generateMenus(routes);
   console.table(menus);
 
   return (

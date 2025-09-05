@@ -1,6 +1,6 @@
-import * as utils from './tokenUtils';
+import tokenUtils from './tokenUtils';
 const validateAuth = async () => {
-  const ak = utils.getAccessToken();
+  const ak = tokenUtils.getAccessToken();
   if (!ak) {
     return false;
   }
@@ -11,4 +11,4 @@ const validateAuth = async () => {
   return true;
 };
 
-export { validateAuth };
+export default { validateAuth };

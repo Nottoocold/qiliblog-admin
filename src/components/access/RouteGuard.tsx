@@ -1,4 +1,4 @@
-import { validateAuth } from '@/utils/authUtils';
+import authUtils from '@/utils/authUtils';
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -11,7 +11,7 @@ const RouteGuard = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     let isMounted = true;
-    validateAuth().then(res => {
+    authUtils.validateAuth().then(res => {
       if (isMounted) {
         setisValid(res);
       }
@@ -25,7 +25,7 @@ const RouteGuard = ({ children }: { children: React.ReactNode }) => {
     if (isValid === false) {
       navigate('/login', { replace: true, state: { from: encodeURIComponent(location.pathname) } });
     }
-  }, [isValid]);
+  }, [isValid, navigate, location]);
 
   if (isValid == null) {
     return <div>loading...</div>;
