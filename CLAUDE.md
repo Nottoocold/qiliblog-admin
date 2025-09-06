@@ -64,3 +64,4 @@ npm run preview
 - Prettier for code formatting
 - React Hooks linting rules
 - Strict TypeScript compiler options
+- 对于当前项目，你要基于已有实现，框架的能力或使用的依赖的能力，来解决我提出的问题
