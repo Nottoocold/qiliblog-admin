@@ -24,8 +24,8 @@ const routes: RouterItem[] = [
     element: <ProtectManagerLayout />,
     errorElement: <ErrorPage />,
     meta: {
-      key: '/root',
-      title: '首页',
+      key: '/',
+      title: 'layout',
       hideInMenu: true,
       hideInBreadcrumb: true,
     },

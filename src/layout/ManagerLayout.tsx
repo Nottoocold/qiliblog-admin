@@ -1,10 +1,11 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import routes from '@/router/router';
 import menuUtils from '@/utils/menuUtils';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { Button, Layout, Menu, Breadcrumb, theme, type MenuProps } from 'antd';
 import RightContent from '@/components/RightContent/RightContent';
+import type { RouterItem } from '@/types/route';
 
 const { Header, Sider, Content, Footer } = Layout;
 
@@ -27,18 +28,69 @@ export default function ManagerLayout() {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+  // 存储当前选中的菜单keyPath
+  const [selectedKeyPath, setSelectedKeyPath] = useState<string[]>([]);
 
-  const menus = menuUtils.generateMenus(routes);
-  console.log('render menus:', menus);
+  const menus = useMemo(() => menuUtils.generateMenus(routes), []);
 
   const menuClick: MenuProps['onClick'] = info => {
-    console.log('菜单点击:', info);
+    console.log('菜单点击:', info.key, info.keyPath);
     if (info.key !== location.pathname) {
-      console.log('当前路径:', location.pathname);
-      console.log('跳转:', info.key);
+      setSelectedKeyPath(info.keyPath);
+      // console.log('当前路径:', location.pathname);
+      // console.log('跳转:', info.key);
       navigate(info.key);
     }
   };
+
+  // 在路由配置中查找对应的路由信息
+  const findRoute = (routes: RouterItem[], key: string): RouterItem | undefined => {
+    for (const route of routes) {
+      if (route.meta?.key === key) {
+        return route;
+      }
+      if (route.children) {
+        const found = findRoute(route.children, key);
+        if (found) {
+          return found;
+        }
+      }
+    }
+    return undefined;
+  };
+
+  // 根据菜单keyPath生成面包屑数据
+  const generateBreadcrumbsFromKeyPath = (keyPath: string[], routes: RouterItem[]) => {
+    const breadcrumbItems = keyPath
+      .slice()
+      .reverse()
+      .map(key => {
+        const route = findRoute(routes, key);
+        return route
+          ? {
+              title: route.meta?.title || key,
+              href: route.path,
+            }
+          : {
+              title: key,
+              href: key,
+            };
+      });
+
+    return breadcrumbItems.map((item, index) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { href, ...rest } = item;
+      return index == breadcrumbItems.length - 1 ? { ...rest } : item;
+    });
+    // return breadcrumbItems;
+  };
+
+  // 生成当前页面的面包屑数据
+  const currentBreadcrumbs = selectedKeyPath.length
+    ? generateBreadcrumbsFromKeyPath(selectedKeyPath, routes)
+    : [{ title: '首页', href: '/' }];
+
+  console.log('current breads', currentBreadcrumbs);
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -53,7 +105,7 @@ export default function ManagerLayout() {
           theme="light"
           mode="inline"
           onClick={menuClick}
-          defaultSelectedKeys={[location.pathname]}
+          defaultSelectedKeys={[location.pathname === '/' ? '/home' : location.pathname]}
           items={menus}
         />
       </Sider>
@@ -89,10 +141,7 @@ export default function ManagerLayout() {
           </div>
         </Header>
         <Content style={contentStyle}>
-          <Breadcrumb
-            items={[{ title: 'Home' }, { title: 'List' }, { title: 'App' }]}
-            style={{ margin: '0 0 16px 0' }}
-          />
+          <Breadcrumb items={currentBreadcrumbs} style={{ margin: '0 0 16px 0' }} />
           <div
             style={{
               background: colorBgContainer,
