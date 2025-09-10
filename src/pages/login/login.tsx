@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Form, Input, Button, Checkbox, Tabs, Divider, Space, message } from 'antd';
+import { Form, Input, Button, Checkbox, Tabs, Divider, Space, App } from 'antd';
 import {
   MobileOutlined,
   LockOutlined,
@@ -7,23 +7,38 @@ import {
   AlipayOutlined,
   TaobaoOutlined,
   WeiboOutlined,
+  MailOutlined,
 } from '@ant-design/icons';
 import styles from './login.module.less';
 import type { LoginParams } from '@/types/login';
-import tokenUtils from '@/utils/tokenUtils';
+import { LoginType } from '@/types/login.d';
 import { useLocation, useNavigate } from 'react-router-dom';
+import httpClient from '@/utils/http';
 
 const LoginPage = () => {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const [activeTab, setActiveTab] = useState<string>('account');
   const [countdown, setCountdown] = useState<number>(0);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
   const location = useLocation();
   const from = decodeURIComponent(location.state?.from || '/');
-
+  const loginMethod =
+    activeTab === 'phone'
+      ? LoginType.phone
+      : activeTab === 'email'
+        ? LoginType.email
+        : LoginType.account;
   // 获取验证码倒计时
-  const getVerificationCode = () => {
+  const getVerificationCode = async () => {
+    try {
+      await form.validateFields(['phone']);
+    } catch (error) {
+      console.log('手机号验证失败:', error);
+      return;
+    }
+
     if (countdown > 0) return;
 
     setCountdown(60);
@@ -40,16 +55,25 @@ const LoginPage = () => {
     message.success('验证码已发送');
   };
 
-  const onFinish = (values: LoginParams) => {
+  const onFinish = async (values: LoginParams) => {
     console.log('登录参数:', values);
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      tokenUtils.setToken('abcabcwsad1231', 'raw');
-      form.resetFields();
-      navigate(from, { replace: true });
+    try {
+      // 模拟登录请求
+      const payload = { ...values, loginType: loginMethod };
+      console.log('提交的登录参数:', payload);
+      const resp = await httpClient.post('auth/login', { json: payload }).json();
+      console.log('登录成功:', resp);
+      // form.resetFields();
+      // navigate(from, { replace: true });
       message.success('登录成功');
-    }, 1000);
+      setLoading(false);
+    } catch (error) {
+      console.log('登录失败:', error);
+      setLoading(false);
+      // message.error('登录失败，请重试');
+      error.showError();
+    }
   };
 
   return (
@@ -77,7 +101,11 @@ const LoginPage = () => {
           items={[
             {
               key: 'account',
-              label: '账号/邮箱登录',
+              label: '账号登录',
+            },
+            {
+              key: 'email',
+              label: '邮箱登录',
             },
             {
               key: 'phone',
@@ -91,12 +119,11 @@ const LoginPage = () => {
             <>
               {/* 手机号登录表单 */}
               <Form.Item
-                name="phone"
+                name="identifier"
                 rules={[
                   { required: true, message: '请输入手机号!' },
                   { pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确!' },
                 ]}
-                validateTrigger="onBlur"
               >
                 <Input prefix={<MobileOutlined />} placeholder="手机号" />
               </Form.Item>
@@ -110,18 +137,36 @@ const LoginPage = () => {
                 </Space.Compact>
               </Form.Item>
             </>
+          ) : activeTab === 'email' ? (
+            <>
+              {/* 邮箱登录表单 */}
+              <Form.Item
+                name="identifier"
+                rules={[
+                  { required: true, message: '请输入邮箱!' },
+                  { type: 'email', message: '邮箱格式不正确!' },
+                ]}
+                validateTrigger="onBlur"
+              >
+                <Input prefix={<MailOutlined />} placeholder="邮箱" />
+              </Form.Item>
+
+              <Form.Item name="credential" rules={[{ required: true, message: '请输入密码!' }]}>
+                <Input.Password prefix={<LockOutlined />} placeholder="密码" />
+              </Form.Item>
+            </>
           ) : (
             <>
               {/* 账号/游戏密码登录表单 */}
               <Form.Item
-                name="account"
+                name="identifier"
                 rules={[{ required: true, message: '请输入用户名!' }]}
                 validateTrigger="onBlur"
               >
-                <Input prefix={<UserOutlined />} placeholder="用户名/邮箱" />
+                <Input prefix={<UserOutlined />} placeholder="用户名" />
               </Form.Item>
 
-              <Form.Item name="password" rules={[{ required: true, message: '请输入密码!' }]}>
+              <Form.Item name="credential" rules={[{ required: true, message: '请输入密码!' }]}>
                 <Input.Password prefix={<LockOutlined />} placeholder="密码" />
               </Form.Item>
             </>

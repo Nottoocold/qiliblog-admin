@@ -2,6 +2,7 @@ import './App.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import routes from './router/router.tsx';
 import { ConfigProvider, App as AntdApp } from 'antd';
+import { AntdAppWrapper } from './components/AntdAppWrapper/AntdAppWrapper.tsx';
 
 const router = createBrowserRouter(routes);
 
@@ -17,7 +18,9 @@ const App = () => {
       }}
     >
       <AntdApp style={{ height: '100%' }}>
-        <RouterProvider router={router} />
+        <AntdAppWrapper>
+          <RouterProvider router={router} />
+        </AntdAppWrapper>
       </AntdApp>
     </ConfigProvider>
   );

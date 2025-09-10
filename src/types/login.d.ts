@@ -1,13 +1,26 @@
-type LoginByPhoneParams = {
-  phone: string;
+export enum LoginType {
+  email = 0,
+  phone = 1,
+  account = 2,
+}
+
+interface BaseLoginParams {
+  remember?: boolean;
+  identifier: string;
+  credential?: string;
+}
+
+interface LoginByPhoneParams extends BaseLoginParams {
+  loginType: LoginType.phone;
   code: string;
-  remember?: boolean;
-};
+}
 
-type LoginByAccountParams = {
-  account: string;
-  password: string;
-  remember?: boolean;
-};
+interface LoginByAccountParams extends BaseLoginParams {
+  loginType: LoginType.account;
+}
 
-export type LoginParams = LoginByPhoneParams | LoginByAccountParams;
+interface LoginByEmailParams extends BaseLoginParams {
+  loginType: LoginType.email;
+}
+
+export type LoginParams = LoginByPhoneParams | LoginByAccountParams | LoginByEmailParams;
