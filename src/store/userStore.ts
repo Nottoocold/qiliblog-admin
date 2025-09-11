@@ -21,13 +21,15 @@ export const useUserStore = create<UserState>()(
         setTokenUtil(accessToken, refreshToken);
       },
       onLoadedUserInfo: user => {
+        // 保存用户信息和认证状态
         set({ user, isAuthenticated: true });
       },
       logout: () => {
         // 清理token
         clearTokenUtil();
         // 清理用户信息和认证状态
-        set({ user: null, isAuthenticated: false });
+        // 清理user-storeage
+        localStorage.removeItem('user-storage');
       },
     }),
     {
