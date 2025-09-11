@@ -1,26 +1,27 @@
-import authUtils from '@/utils/authUtils';
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ScreenLoading from '@/components/ScreenLoading/ScreenLoading';
+import { useUserStore } from '@/store/userStore';
 
 const RouteGuard = ({ children }: { children: React.ReactNode }) => {
   const [isValid, setisValid] = useState<boolean | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useUserStore();
 
   console.log(location.pathname, 'need to be protected');
 
   useEffect(() => {
     let isMounted = true;
-    authUtils.validateAuth().then(res => {
-      if (isMounted) {
-        setisValid(res);
-      }
-    });
+    // 检查用户是否已认证
+    if (isMounted) {
+      console.log('isAuthenticated:', isAuthenticated, 'user:', user);
+      setisValid(isAuthenticated || !!user);
+    }
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     if (isValid === false) {

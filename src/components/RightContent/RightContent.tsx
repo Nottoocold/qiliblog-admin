@@ -1,9 +1,9 @@
-import { clearToken } from '@/utils/tokenUtils';
 import { LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import { App, Avatar, Dropdown, Space, type MenuProps } from 'antd';
 import type React from 'react';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useUserStore } from '@/store/userStore';
 
 const items: MenuProps['items'] = [
   {
@@ -21,18 +21,19 @@ const items: MenuProps['items'] = [
 const RightContent: React.FC = () => {
   const navigate = useNavigate();
   const { message } = App.useApp();
+  const { logout } = useUserStore();
 
   const onMenuClick: MenuProps['onClick'] = useCallback(
     ({ key }: { key: string }) => {
       if (key === 'logout') {
         message.info('退出登录');
-        clearToken();
+        logout();
         navigate('/login');
       } else if (key === 'profile') {
         message.info('个人中心');
       }
     },
-    [navigate, message]
+    [navigate, message, logout]
   );
 
   return (
