@@ -1,6 +1,6 @@
-import tokenUtils from './tokenUtils';
+import { getAccessToken } from './tokenUtils';
 const validateAuth = async (delay = 1000) => {
-  const ak = tokenUtils.getAccessToken();
+  const ak = getAccessToken();
   await new Promise(resolve => setTimeout(resolve, delay));
   if (!ak) {
     return false;

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Form, Input, Button, Checkbox, Tabs, Divider, Space, App } from 'antd';
+import { Form, Input, Button, Checkbox, Tabs, Divider, Space } from 'antd';
 import {
   MobileOutlined,
   LockOutlined,
@@ -13,10 +13,13 @@ import styles from './login.module.less';
 import type { LoginParams } from '@/types/login';
 import { LoginType } from '@/types/login.d';
 import { useLocation, useNavigate } from 'react-router-dom';
-import httpClient from '@/utils/http';
+import { handleHttpError } from '@/utils/http';
+import { useAntd } from '@/components/AntdAppWrapper/AntdContext';
+import { setToken } from '@/utils/tokenUtils';
+import { login } from '@/services/auth.api';
 
 const LoginPage = () => {
-  const { message } = App.useApp();
+  const { message } = useAntd();
   const [form] = Form.useForm();
   const [activeTab, setActiveTab] = useState<string>('account');
   const [countdown, setCountdown] = useState<number>(0);
@@ -58,22 +61,43 @@ const LoginPage = () => {
   const onFinish = async (values: LoginParams) => {
     console.log('登录参数:', values);
     setLoading(true);
-    try {
-      // 模拟登录请求
-      const payload = { ...values, loginType: loginMethod };
-      console.log('提交的登录参数:', payload);
-      const resp = await httpClient.post('auth/login', { json: payload }).json();
-      console.log('登录成功:', resp);
-      // form.resetFields();
-      // navigate(from, { replace: true });
-      message.success('登录成功');
-      setLoading(false);
-    } catch (error) {
-      console.log('登录失败:', error);
-      setLoading(false);
-      // message.error('登录失败，请重试');
-      error.showError();
+    let payload: LoginParams;
+
+    switch (loginMethod) {
+      case LoginType.phone:
+        payload = {
+          loginType: LoginType.phone,
+          identifier: values.identifier,
+          code: values.code!,
+        };
+        break;
+      case LoginType.email:
+        payload = {
+          loginType: LoginType.email,
+          identifier: values.identifier,
+          credential: values.credential!,
+        };
+        break;
+      case LoginType.account:
+      default:
+        payload = {
+          loginType: LoginType.account,
+          identifier: values.identifier,
+          credential: values.credential!,
+        };
+        break;
     }
+    setLoading(true);
+    try {
+      const res = await login(payload);
+      message.success('登录成功');
+      setToken(res.data.accessToken, res.data.refreshToken);
+      navigate(from, { replace: true });
+    } catch (error) {
+      console.error('登录失败:', error);
+      handleHttpError(error);
+    }
+    setLoading(false);
   };
 
   return (

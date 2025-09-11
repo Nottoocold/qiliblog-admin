@@ -1,4 +1,4 @@
-import tokenUtils from '@/utils/tokenUtils';
+import { clearToken } from '@/utils/tokenUtils';
 import { LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import { App, Avatar, Dropdown, Space, type MenuProps } from 'antd';
 import type React from 'react';
@@ -26,7 +26,7 @@ const RightContent: React.FC = () => {
     ({ key }: { key: string }) => {
       if (key === 'logout') {
         message.info('退出登录');
-        tokenUtils.clearToken();
+        clearToken();
         navigate('/login');
       } else if (key === 'profile') {
         message.info('个人中心');

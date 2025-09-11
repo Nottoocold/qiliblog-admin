@@ -1,7 +1,8 @@
 import ky, { HTTPError } from 'ky';
 import { type NormalizedOptions } from 'ky';
-import tokenUtils from './tokenUtils';
+import { getAccessToken } from './tokenUtils';
 import type { MessageInstance } from 'antd/es/message/interface';
+import type { ApiResult } from '@/types/server';
 
 let antdMessage: MessageInstance | null = null;
 
@@ -9,12 +10,6 @@ let antdMessage: MessageInstance | null = null;
 export function configureHttpMessage(messageInstance: MessageInstance) {
   antdMessage = messageInstance;
   console.log('Configured antd message instance for HTTP client', antdMessage);
-}
-
-interface ApiResult<T> {
-  errorCode: number;
-  errorDesc: string;
-  data: T;
 }
 
 const BUSINESS_ERROR_FALG = 'Business Error';
@@ -37,13 +32,25 @@ export class MyError extends HTTPError {
   }
 }
 
+export function handleHttpError(error: unknown): void {
+  if (error instanceof MyError) {
+    error.showError();
+  } else {
+    console.warn('捕获到非 MyError 类型错误:', error);
+    // 可以使用默认的错误提示方式
+    if (antdMessage) {
+      antdMessage.error('请求失败，请重试');
+    }
+  }
+}
+
 const httpClient = ky.create({
   prefixUrl: '/api',
   timeout: false,
   hooks: {
     beforeRequest: [
       request => {
-        const accessToken = tokenUtils.getAccessToken();
+        const accessToken = getAccessToken();
         if (accessToken) {
           request.headers.set('Authorization', `Bearer ${accessToken}`);
         }
@@ -73,7 +80,6 @@ const httpClient = ky.create({
               return new Response(JSON.stringify(apiResult), { status: 200, statusText: 'OK' });
             } else {
               // 业务错误，这里把http状态码从200改成400，方便ky内部做错误处理，能在catch里捕获到
-              console.log('业务错误:', apiResult);
               return new Response(JSON.stringify(apiResult), {
                 status: 400,
                 statusText: BUSINESS_ERROR_FALG,

@@ -5,22 +5,19 @@ export enum LoginType {
 }
 
 interface BaseLoginParams {
-  remember?: boolean;
   identifier: string;
   credential?: string;
+  loginType: number;
 }
 
 interface LoginByPhoneParams extends BaseLoginParams {
-  loginType: LoginType.phone;
   code: string;
 }
 
-interface LoginByAccountParams extends BaseLoginParams {
-  loginType: LoginType.account;
-}
+export type LoginParams = BaseLoginParams | LoginByPhoneParams;
 
-interface LoginByEmailParams extends BaseLoginParams {
-  loginType: LoginType.email;
-}
-
-export type LoginParams = LoginByPhoneParams | LoginByAccountParams | LoginByEmailParams;
+export type LoginResponse = ApiResult<{
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: string;
+}>;
