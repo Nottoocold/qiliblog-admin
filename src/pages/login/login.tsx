@@ -15,12 +15,13 @@ import { LoginType } from '@/types/login.d';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { handleHttpError } from '@/utils/http';
 import { useAntd } from '@/components/AntdAppWrapper/AntdContext';
-import { getUserInfo, login } from '@/services/auth.api';
+import { login } from '@/services/auth.api';
 import { useUserStore } from '@/store/userStore';
+import { useShallow } from 'zustand/shallow';
 
 const LoginPage = () => {
   const { message } = useAntd();
-  const { onLogin, onLoadedUserInfo } = useUserStore();
+  const { onLogin } = useUserStore(useShallow(state => ({ onLogin: state.onLogin })));
   const [form] = Form.useForm<LoginFormValues>();
   const [activeTab, setActiveTab] = useState<string>('account');
   const [countdown, setCountdown] = useState<number>(0);
@@ -91,9 +92,7 @@ const LoginPage = () => {
     try {
       const loginResponse = await login(payload);
       // 使用zustand store保存用户信息和token
-      onLogin(loginResponse.data.accessToken, loginResponse.data.refreshToken);
-      const userinfoResponse = await getUserInfo();
-      onLoadedUserInfo(userinfoResponse.data);
+      await onLogin(loginResponse.data.accessToken, loginResponse.data.refreshToken);
       message.success('登录成功');
       navigate(from, { replace: true });
     } catch (error) {

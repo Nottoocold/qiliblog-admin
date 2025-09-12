@@ -2,12 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ScreenLoading from '@/components/ScreenLoading/ScreenLoading';
 import { useUserStore } from '@/store/userStore';
+import { useShallow } from 'zustand/shallow';
 
 const RouteGuard = ({ children }: { children: React.ReactNode }) => {
   const [isValid, setisValid] = useState<boolean | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useUserStore();
+  const [isAuthenticated, user] = useUserStore(
+    useShallow(state => [state.isAuthenticated, state.user])
+  );
 
   console.log(location.pathname, 'need to be protected');
 

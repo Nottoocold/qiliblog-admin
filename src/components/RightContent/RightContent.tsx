@@ -4,6 +4,7 @@ import type React from 'react';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '@/store/userStore';
+import { useShallow } from 'zustand/shallow';
 
 const items: MenuProps['items'] = [
   {
@@ -21,7 +22,7 @@ const items: MenuProps['items'] = [
 const RightContent: React.FC = () => {
   const navigate = useNavigate();
   const { message } = App.useApp();
-  const { logout } = useUserStore();
+  const { logout } = useUserStore(useShallow(state => ({ logout: state.logout })));
 
   const onMenuClick: MenuProps['onClick'] = useCallback(
     ({ key }: { key: string }) => {
