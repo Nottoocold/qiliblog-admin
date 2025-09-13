@@ -4,23 +4,30 @@ import { getAccessToken } from './tokenUtils';
 import type { MessageInstance } from 'antd/es/message/interface';
 import type { ApiResult } from '@/types/server';
 
+const env = import.meta.env;
+
 let antdMessage: MessageInstance | null = null;
 
 // 提供一个配置函数，在应用初始化时调用
 export function configureHttpMessage(messageInstance: MessageInstance) {
   antdMessage = messageInstance;
-  console.log('Configured antd message instance for HTTP client', antdMessage);
+  if (env.VITE_APP_DEBUG) {
+    console.log('Configured antd message instance for HTTP client', antdMessage);
+  }
 }
 
 const BUSINESS_ERROR_FALG = 'Business Error';
+const HTTP_ERROR_FALG = 'HTTPError';
 
 export class MyError extends HTTPError {
+  errorCode: number;
   constructor(response: Response, request: Request, options: NormalizedOptions) {
     super(response, request, options);
+    this.errorCode = 0;
   }
 
   isBusinessError() {
-    return this.name === 'BusinessError';
+    return this.name === BUSINESS_ERROR_FALG;
   }
 
   showError() {
@@ -29,6 +36,12 @@ export class MyError extends HTTPError {
     } else {
       console.error('请求失败 (antd message 未配置):', this.message);
     }
+  }
+
+  printError() {
+    return this.isBusinessError()
+      ? `${this.errorCode}-${this.name}: ${this.message}`
+      : `${this.name}: ${this.message} (HTTP ${this.response.status})`;
   }
 }
 
@@ -44,6 +57,13 @@ export function handleHttpError(error: unknown): void {
   }
 }
 
+export function getBusinessErrorCode(error: unknown): number | null {
+  if (error instanceof MyError && error.isBusinessError()) {
+    return error.errorCode;
+  }
+  return null;
+}
+
 const httpClient = ky.create({
   prefixUrl: '/api',
   timeout: false,
@@ -57,84 +77,53 @@ const httpClient = ky.create({
       },
     ],
     afterResponse: [
-      (request, options, response) => {
-        console.log(
-          'afterResponse hook[0] executed, response is',
-          response,
-          ', request is',
-          request,
-          ', options is',
-          options
-        );
-      },
       async (_request, _options, response) => {
         // 这里总会执行，无论是2xx还是非2xx
-        console.log('afterResponse hook[1] executed, will do custom response handling');
         if (response.ok) {
-          // 处理成功响应
-          const contentType = response.headers.get('Content-Type');
-          if (contentType && contentType.includes('application/json')) {
-            const apiResult = await response.json<ApiResult<unknown>>();
-            const { errorCode } = apiResult;
-            if (errorCode === 0) {
-              return new Response(JSON.stringify(apiResult), { status: 200, statusText: 'OK' });
-            } else {
-              // 业务错误，这里把http状态码从200改成400，方便ky内部做错误处理，能在catch里捕获到
+          let apiResult: ApiResult<unknown> | null = null;
+          try {
+            apiResult = await response.json<ApiResult<unknown>>();
+            if (apiResult.errorCode !== 0) {
+              // 业务错误
               return new Response(JSON.stringify(apiResult), {
                 status: 400,
                 statusText: BUSINESS_ERROR_FALG,
                 headers: response.headers,
               });
             }
-          } else {
-            // 非JSON响应,目前基本上都是JSON响应,代码基本不会走到这里,后期再处理非JSON响应,比如文件下载等
-            console.log('非JSON响应,直接返回原始响应');
-            return response;
-          }
-        } else {
-          // 处理错误响应,这里是http状态码非2xx
-          // 非2xx的响应,也被后端统一包装成了json
-          const contentType = response.headers.get('Content-Type');
-          if (contentType && contentType.includes('application/json')) {
-            const apiResult = await response.json<ApiResult<unknown>>();
-            return new Response(JSON.stringify(apiResult), {
-              status: response.status,
-              statusText: response.statusText,
-              headers: response.headers,
-            });
-          } else {
-            // 非JSON响应,目前基本上都是JSON响应,代码基本不会走到这里,后期再处理非JSON响应,比如文件下载等
-            console.log('非JSON响应,直接返回原始响应');
-            return response;
+          } catch (e) {
+            console.warn('请求失败 (非 JSON 响应):', e);
           }
         }
       },
     ],
     beforeError: [
       async error => {
-        console.log(
-          'beforeError hook[0] executed, customize the error here. original error is',
-          error
-        );
-        const _myError = new MyError(error.response, error.request, error.options);
-        const { status, statusText, headers } = error.response;
-        let apiResult = new Object() as ApiResult<unknown>;
-        const contentType = headers.get('Content-Type');
-        if (contentType && contentType.includes('application/json')) {
+        const myError = new MyError(error.response, error.request, error.options);
+        const { status, statusText } = error.response;
+        let apiResult = {} as ApiResult<unknown>;
+        try {
           apiResult = await error.response.json<ApiResult<unknown>>();
+        } catch {
+          // 解析失败，保持 apiResult 为 null
         }
         if (status === 400 && statusText === BUSINESS_ERROR_FALG) {
           // 业务错误
-          console.log('业务错误:', apiResult);
-          _myError.name = 'BusinessError';
-          _myError.message = apiResult.errorDesc || '业务异常';
+          myError.name = BUSINESS_ERROR_FALG;
+          myError.message = apiResult.errorDesc || '业务异常';
+          myError.errorCode = apiResult.errorCode;
+          if (env.VITE_APP_DEBUG) {
+            console.warn('Business error detected:', myError.printError());
+          }
         } else {
           // 非业务错误
-          console.log('HTTP错误:', status, statusText);
-          _myError.name = 'HTTPError';
-          _myError.message = apiResult.errorDesc || `HTTP Error: ${status}`;
+          myError.name = HTTP_ERROR_FALG;
+          myError.message = apiResult.errorDesc || `HTTP Error: ${status}`;
+          if (env.VITE_APP_DEBUG) {
+            console.error('HTTP error detected:', myError.printError());
+          }
         }
-        return _myError;
+        return myError;
       },
     ],
   },
