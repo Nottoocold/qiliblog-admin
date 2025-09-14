@@ -20,7 +20,7 @@ const generateMenus = (routes: RouterItem[]): MenuItem[] => {
       }
       return [];
     })
-    .filter(item => Boolean(item.key));
+    .filter(item => Boolean(item.key) && Boolean(item.label));
 };
 
 export default { generateMenus };

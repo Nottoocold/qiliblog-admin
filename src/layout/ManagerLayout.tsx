@@ -3,9 +3,8 @@ import React, { useState, useMemo } from 'react';
 import routes from '@/router/router';
 import menuUtils from '@/utils/menuUtils';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
-import { Button, Layout, Menu, Breadcrumb, theme, type MenuProps } from 'antd';
+import { Button, Layout, Menu, theme, type MenuProps } from 'antd';
 import RightContent from '@/components/RightContent/RightContent';
-import type { RouterItem } from '@/types/route';
 
 const { Header, Sider, Content, Footer } = Layout;
 
@@ -28,71 +27,27 @@ export default function ManagerLayout() {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
-  // 存储当前选中的菜单keyPath
-  const [selectedKeyPath, setSelectedKeyPath] = useState<string[]>([]);
-
   const menus = useMemo(() => menuUtils.generateMenus(routes), []);
-  console.log('routes', routes);
-  console.log('menus', menus);
 
-  const menuClick: MenuProps['onClick'] = info => {
-    console.log('菜单点击:', info.key, info.keyPath);
-    if (info.key !== location.pathname) {
-      setSelectedKeyPath(info.keyPath);
-      // console.log('当前路径:', location.pathname);
-      // console.log('跳转:', info.key);
-      navigate(info.key);
+  const menuSelect: MenuProps['onSelect'] = ({ key }) => {
+    if (key !== location.pathname) {
+      navigate(key);
     }
   };
 
-  // 在路由配置中查找对应的路由信息
-  const findRoute = (routes: RouterItem[], key: string): RouterItem | undefined => {
-    for (const route of routes) {
-      if (route.meta?.key === key) {
-        return route;
-      }
-      if (route.children) {
-        const found = findRoute(route.children, key);
-        if (found) {
-          return found;
-        }
-      }
-    }
-    return undefined;
-  };
+  // 计算当前路径对应的展开菜单项
+  const getDefaultOpenKeys = () => {
+    const pathSnippets = location.pathname.split('/').filter(i => i);
+    const keys: string[] = [];
+    let currentPath = '';
 
-  // 根据菜单keyPath生成面包屑数据
-  const generateBreadcrumbsFromKeyPath = (keyPath: string[], routes: RouterItem[]) => {
-    const breadcrumbItems = keyPath
-      .slice()
-      .reverse()
-      .map(key => {
-        const route = findRoute(routes, key);
-        return route
-          ? {
-              title: route.meta?.title || key,
-              href: route.path,
-            }
-          : {
-              title: key,
-              href: key,
-            };
-      });
-
-    return breadcrumbItems.map((item, index) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { href, ...rest } = item;
-      return index == breadcrumbItems.length - 1 ? { ...rest } : item;
+    pathSnippets.forEach(snippet => {
+      currentPath += `/${snippet}`;
+      keys.push(currentPath);
     });
-    // return breadcrumbItems;
+
+    return keys;
   };
-
-  // 生成当前页面的面包屑数据
-  const currentBreadcrumbs = selectedKeyPath.length
-    ? generateBreadcrumbsFromKeyPath(selectedKeyPath, routes)
-    : [{ title: '首页', href: '/' }];
-
-  console.log('current breads', currentBreadcrumbs);
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -106,8 +61,9 @@ export default function ManagerLayout() {
         <Menu
           theme="light"
           mode="inline"
-          onClick={menuClick}
-          defaultSelectedKeys={[location.pathname === '/' ? '/home' : location.pathname]}
+          onSelect={menuSelect}
+          selectedKeys={[location.pathname]}
+          defaultOpenKeys={getDefaultOpenKeys()}
           items={menus}
         />
       </Sider>
@@ -143,7 +99,6 @@ export default function ManagerLayout() {
           </div>
         </Header>
         <Content style={contentStyle}>
-          <Breadcrumb items={currentBreadcrumbs} style={{ margin: '0 0 16px 0' }} />
           <div
             style={{
               background: colorBgContainer,

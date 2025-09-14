@@ -8,6 +8,7 @@ import User from '@/pages/system/user';
 import Tag from '@/pages/tag/tag';
 import Post from '@/pages/post/post';
 import Role from '@/pages/system/role';
+import { Navigate } from 'react-router-dom';
 
 const routes: RouterItem[] = [
   {
@@ -33,7 +34,7 @@ const routes: RouterItem[] = [
     children: [
       {
         index: true,
-        element: <Home />,
+        element: <Navigate to="/home" replace />,
         errorElement: <ErrorPage />,
       },
       {
@@ -85,7 +86,7 @@ const routes: RouterItem[] = [
         children: [
           {
             index: true,
-            element: <User />,
+            element: <Navigate to="/system/user" replace />,
             errorElement: <ErrorPage />,
           },
           {
