@@ -32,6 +32,8 @@ export default function ManagerLayout() {
   const [selectedKeyPath, setSelectedKeyPath] = useState<string[]>([]);
 
   const menus = useMemo(() => menuUtils.generateMenus(routes), []);
+  console.log('routes', routes);
+  console.log('menus', menus);
 
   const menuClick: MenuProps['onClick'] = info => {
     console.log('菜单点击:', info.key, info.keyPath);

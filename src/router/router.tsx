@@ -1,12 +1,13 @@
 import Login from '@/pages/login/login.tsx';
 import ErrorPage from '@/pages/ErrorPage.tsx';
 import Home from '@/pages/home/home.tsx';
-import { HomeOutlined, UserOutlined, TagsOutlined, EditOutlined } from '@ant-design/icons';
+import { HomeOutlined, TagsOutlined, EditOutlined, SettingOutlined } from '@ant-design/icons';
 import type { RouterItem } from '@/types/route';
 import ProtectManagerLayout from '@/layout/ProtectManagerLayout';
-import User from '@/pages/user/user';
+import User from '@/pages/system/user';
 import Tag from '@/pages/tag/tag';
 import Post from '@/pages/post/post';
+import Role from '@/pages/system/role';
 
 const routes: RouterItem[] = [
   {
@@ -48,18 +49,6 @@ const routes: RouterItem[] = [
         },
       },
       {
-        path: '/user',
-        element: <User />,
-        errorElement: <ErrorPage />,
-        meta: {
-          key: '/user',
-          title: '用户管理',
-          icon: <UserOutlined />,
-          hideInMenu: false,
-          hideInBreadcrumb: false,
-        },
-      },
-      {
         path: '/tag',
         element: <Tag />,
         errorElement: <ErrorPage />,
@@ -82,6 +71,46 @@ const routes: RouterItem[] = [
           hideInMenu: false,
           hideInBreadcrumb: false,
         },
+      },
+      {
+        path: '/system',
+        errorElement: <ErrorPage />,
+        meta: {
+          key: '/system',
+          title: '系统管理',
+          icon: <SettingOutlined />,
+          hideInMenu: false,
+          hideInBreadcrumb: false,
+        },
+        children: [
+          {
+            index: true,
+            element: <User />,
+            errorElement: <ErrorPage />,
+          },
+          {
+            path: '/system/user',
+            element: <User />,
+            errorElement: <ErrorPage />,
+            meta: {
+              key: '/system/user',
+              title: '用户管理',
+              hideInMenu: false,
+              hideInBreadcrumb: false,
+            },
+          },
+          {
+            path: '/system/role',
+            element: <Role />,
+            errorElement: <ErrorPage />,
+            meta: {
+              key: '/system/role',
+              title: '角色管理',
+              hideInMenu: false,
+              hideInBreadcrumb: false,
+            },
+          },
+        ],
       },
     ],
   },
