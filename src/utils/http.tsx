@@ -3,6 +3,7 @@ import { type NormalizedOptions } from 'ky';
 import { getAccessToken } from './tokenUtils';
 import type { MessageInstance } from 'antd/es/message/interface';
 import type { ApiResult } from '@/types/server';
+import refreshManager from './rk';
 
 const env = import.meta.env;
 
@@ -77,6 +78,20 @@ const httpClient = ky.create({
       },
     ],
     afterResponse: [
+      async (request, _options, response) => {
+        if (response.status === 401) {
+          // 401 未授权，尝试刷新令牌
+          try {
+            const ak = await refreshManager.refresh();
+            request.headers.set('Authorization', `Bearer ${ak}`);
+            return ky(request);
+          } catch {
+            // 刷新失败，跳转登录
+            antdMessage?.error('登录已过期，请重新登录');
+            window.location.href = '/login';
+          }
+        }
+      },
       async (_request, _options, response) => {
         // 这里总会执行，无论是2xx还是非2xx
         if (response.ok) {
