@@ -2,31 +2,42 @@ import ky from 'ky';
 import { getRefreshToken, setToken } from './tokenUtils';
 import type { LoginResponse } from '@/types/login';
 class RefreshManager {
-  // 是否正在刷新令牌
-  _isRefreshing = false;
-  // 刷新令牌时排队的请求
-  _retryQueue: Array<{
+  /**
+   * 是否正在刷新令牌
+   */
+  private _isRefreshing;
+  /**
+   * 队列，用于存储等待刷新的请求
+   * resolve: 刷新成功时调用，传入新的访问令牌
+   * reject: 刷新失败时调用，传入错误信息
+   */
+  private _retryQueue: Array<{
     resolve: (value: string) => void;
-    reject: (reason: string | null) => void;
-  }> = [];
+    reject: (reason: string) => void;
+  }>;
 
+  /**
+   *  构造函数,初始化状态
+   */
   constructor() {
     this._isRefreshing = false;
     this._retryQueue = [];
   }
 
-  isRefresh() {
-    return this._isRefreshing;
-  }
-
+  /**
+   * 刷新令牌
+   * @return 返回一个 Promise，解析为新的访问令牌, 或在刷新失败时拒绝
+   */
   async refresh(): Promise<string> {
     if (this._isRefreshing) {
+      // 如果已经在刷新，返回一个新的 Promise 并将其加入队列,等待刷新完成
       return new Promise((resolve, reject) => {
         this._retryQueue.push({ resolve, reject });
       });
     }
 
-    this._isRefreshing = true; // 标记为正在刷新
+    // 标记为正在刷新(防止重复刷新)
+    this._isRefreshing = true;
 
     // 执行刷新逻辑
     try {
@@ -53,9 +64,10 @@ class RefreshManager {
         return Promise.reject('刷新令牌失败');
       }
     } catch {
-      return Promise.reject('刷新令牌请求失败');
+      return Promise.reject('刷新令牌失败');
     } finally {
-      this._isRefreshing = false; // 重置刷新状态
+      // 无论成功或失败，都将状态重置
+      this._isRefreshing = false;
     }
   }
 }

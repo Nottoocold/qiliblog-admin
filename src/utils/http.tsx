@@ -3,7 +3,7 @@ import { type NormalizedOptions } from 'ky';
 import { getAccessToken } from './tokenUtils';
 import type { MessageInstance } from 'antd/es/message/interface';
 import type { ApiResult } from '@/types/server';
-import refreshManager from './rk';
+import refreshManager from './rtk';
 
 const env = import.meta.env;
 
