@@ -33,7 +33,7 @@ const RouteGuard = ({ children }: { children: React.ReactNode }) => {
   }, [isValid, navigate, location]);
 
   if (isValid == null) {
-    return <ScreenLoading />;
+    return <ScreenLoading tip="资源加载中..." />;
   }
   if (isValid === true) {
     return children;
