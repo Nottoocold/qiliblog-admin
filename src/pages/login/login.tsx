@@ -15,13 +15,16 @@ import { LoginType } from '@/types/login.d';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { handleHttpError } from '@/utils/http';
 import { useAntd } from '@/components/AntdAppWrapper/AntdContext';
-import { login } from '@/services/auth.api';
+import { getUserInfo, login } from '@/services/auth.api';
 import { useUserStore } from '@/store/userStore';
+import { setToken } from '@/utils/tokenUtils';
 import { useShallow } from 'zustand/shallow';
 
 const LoginPage = () => {
   const { message } = useAntd();
-  const { onLogin } = useUserStore(useShallow(state => ({ onLogin: state.onLogin })));
+  const { setUserState } = useUserStore(
+    useShallow(state => ({ setUserState: state.setUserState }))
+  );
   const [form] = Form.useForm<LoginFormValues>();
   const [activeTab, setActiveTab] = useState<string>('account');
   const [countdown, setCountdown] = useState<number>(0);
@@ -91,8 +94,10 @@ const LoginPage = () => {
     setLoading(true);
     try {
       const loginResponse = await login(payload);
-      // 使用zustand store保存用户信息和token
-      await onLogin(loginResponse.data.accessToken, loginResponse.data.refreshToken);
+      setToken(loginResponse.data.accessToken, loginResponse.data.refreshToken);
+      const userInfoResponse = await getUserInfo();
+      // 保存用户信息和token
+      setUserState(userInfoResponse.data, true);
       message.success('登录成功');
       navigate(from, { replace: true });
     } catch (error) {

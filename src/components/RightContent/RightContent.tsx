@@ -4,6 +4,8 @@ import type React from 'react';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '@/store/userStore';
+import { logout } from '@/services/auth.api';
+import { clearToken } from '@/utils/tokenUtils';
 import { useShallow } from 'zustand/shallow';
 
 const items: MenuProps['items'] = [
@@ -22,19 +24,25 @@ const items: MenuProps['items'] = [
 const RightContent: React.FC = () => {
   const navigate = useNavigate();
   const { message } = App.useApp();
-  const { logout } = useUserStore(useShallow(state => ({ logout: state.logout })));
+  const { setUserState } = useUserStore(
+    useShallow(state => ({ setUserState: state.setUserState }))
+  );
 
   const onMenuClick: MenuProps['onClick'] = useCallback(
     ({ key }: { key: string }) => {
       if (key === 'logout') {
         message.info('退出登录');
-        logout();
-        navigate('/login');
+        // 清理用户信息和认证状态
+        logout().then(() => {
+          clearToken();
+          setUserState(null, false);
+          navigate('/login');
+        });
       } else if (key === 'profile') {
         message.info('个人中心');
       }
     },
-    [navigate, message, logout]
+    [navigate, message, setUserState]
   );
 
   return (
