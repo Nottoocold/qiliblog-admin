@@ -1,30 +1,23 @@
 import { getTagPage } from '@/services/tag.api';
 import type { TagVo } from '@/types/tag';
 import { handleHttpError } from '@/utils/http';
+import { createAntdTableQuery } from '@/utils/queryUtils';
 import { useAntdTable } from 'ahooks';
-import { Skeleton, Table, type TableProps } from 'antd';
+import { Button, Col, Form, Input, Row, Table, type TableProps } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import React from 'react';
 
-const query = async (pageParams: { current: number; pageSize: number }, formData: object) => {
-  const params = { ...pageParams, ...formData };
-  const resp = await getTagPage(params);
-  return {
-    total: resp.data.total,
-    list: resp.data.list,
-  };
-};
 const Tag: React.FC = () => {
+  const query = createAntdTableQuery(getTagPage, { sortEntry: [{ name: 'id', order: 'desc' }] });
   const [form] = useForm();
-  const { loading, tableProps } = useAntdTable(query, {
-    defaultCurrent: 1,
-    defaultPageSize: 10,
-    loadingDelay: 300,
+  const { tableProps, search } = useAntdTable(query, {
     form,
+    defaultParams: [{ current: 1, pageSize: 10 }, { word: '' }],
     onError(e) {
       handleHttpError(e);
     },
   });
+  const { submit, reset } = search;
 
   const columns: TableProps<TagVo>['columns'] = [
     {
@@ -41,10 +34,29 @@ const Tag: React.FC = () => {
     },
   ];
 
+  const searchForm = (
+    <Form form={form}>
+      <Row gutter={24}>
+        <Col span={6}>
+          <Form.Item label="关键词" name="word">
+            <Input placeholder="name/slug" />
+          </Form.Item>
+        </Col>
+        <Button type="primary" onClick={submit}>
+          Search
+        </Button>
+        <Button onClick={reset} style={{ marginLeft: 16 }}>
+          Reset
+        </Button>
+      </Row>
+    </Form>
+  );
+
   return (
-    <Skeleton active loading={loading}>
+    <div>
+      {searchForm}
       <Table rowKey="id" columns={columns} {...tableProps} />
-    </Skeleton>
+    </div>
   );
 };
 

@@ -9,7 +9,7 @@ export interface TagVo {
 
 export type TagPageResponse = PageResult<TagVo>;
 
-export type TagListResponse = TagPageResponse['data']['items'];
+export type TagListResponse = TagPageResponse['data']['list'];
 
 export type TagQueryParams = Record<string, unknown | undefined> & BasePageParams;
 

@@ -1,10 +1,10 @@
-export interface ApiResult<T> {
+interface ApiResult<T> {
   errorCode: number;
   errorDesc: string;
   data: T;
 }
 
-export type PageResult<T> = ApiResult<{
+interface PageData<T> {
   total: number;
   current: number;
   pageSize: number;
@@ -12,16 +12,16 @@ export type PageResult<T> = ApiResult<{
   hasPre: boolean;
   hasNext: boolean;
   list: T[];
-}>;
-
-export interface SortEntry {
-  name: string;
-  asc: boolean;
-  weight?: number;
 }
 
-export interface BasePageParams {
+type PageResult<T> = ApiResult<PageData<T>>;
+
+interface BasePageParams {
   current: number;
   pageSize: number;
   sortBy?: string;
 }
+
+export type ApiResult<T> = Readonly<ApiResult<T>>;
+export type PageResult<T> = Readonly<PageResult<T>>;
+export type BasePageParams = Readonly<BasePageParams>;
