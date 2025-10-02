@@ -5,10 +5,11 @@ import { getAccessToken, getRefreshToken, setToken, clearToken } from './tokenUt
 import type { MessageInstance } from 'antd/es/message/interface';
 import type { ApiResult } from '@/types/server';
 import type { LoginResponse } from '@/types/login';
+import { envConfig } from '@/config/env.ts';
 
 // DEBUG 模式
-const DEBUG = import.meta.env.VITE_APP_DEBUG || false;
-const TIMEOUT = import.meta.env.VITE_API_TIMEOUT;
+const DEBUG = envConfig.VITE_APP_DEBUG;
+const TIMEOUT = envConfig.VITE_API_TIMEOUT;
 // 业务错误标识
 const BUSINESS_ERROR_FLAG = 'Business Error';
 // HTTP 错误标识
