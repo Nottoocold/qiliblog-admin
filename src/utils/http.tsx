@@ -8,10 +8,11 @@ import type { LoginResponse } from '@/types/login';
 
 // DEBUG 模式
 const DEBUG = import.meta.env.VITE_APP_DEBUG || false;
+const TIMEOUT = import.meta.env.VITE_API_TIMEOUT;
 // 业务错误标识
-const BUSINESS_ERROR_FALG = 'Business Error';
+const BUSINESS_ERROR_FLAG = 'Business Error';
 // HTTP 错误标识
-const HTTP_ERROR_FALG = 'HTTPError';
+const HTTP_ERROR_FLAG = 'HTTPError';
 // 用于存储 antd 的 message 实例
 let antdMessage: MessageInstance | null = null;
 
@@ -19,7 +20,7 @@ let antdMessage: MessageInstance | null = null;
 function configureHttpMessage(messageInstance: MessageInstance) {
   antdMessage = messageInstance;
   if (DEBUG) {
-    console.log('Configured antd message instance for HTTP client', antdMessage);
+    console.debug('Configured antd message instance for HTTP client', antdMessage);
   }
 }
 
@@ -34,7 +35,7 @@ class MyError extends HTTPError {
   }
 
   isBusinessError() {
-    return this.name === BUSINESS_ERROR_FALG;
+    return this.name === BUSINESS_ERROR_FLAG;
   }
 
   showError() {
@@ -108,7 +109,7 @@ class RefreshManager {
   private onRefreshSuccess(data: LoginResponse['data']) {
     setToken(data.accessToken, data.refreshToken);
     if (DEBUG) {
-      console.log('刷新令牌成功, 有' + this._retryQueue.length + '个并发请求正在等待刷新...');
+      console.debug('刷新令牌成功, 有' + this._retryQueue.length + '个并发请求正在等待刷新...');
     }
     this._retryQueue.forEach(({ resolve }) => resolve(data.accessToken));
     this._retryQueue = [];
@@ -118,7 +119,7 @@ class RefreshManager {
     clearToken();
     useUserStore.getState().clear();
     if (DEBUG) {
-      console.log('刷新令牌失败, 有' + this._retryQueue.length + '个并发请求正在等待刷新...');
+      console.debug('刷新令牌失败, 有' + this._retryQueue.length + '个并发请求正在等待刷新...');
     }
     this._retryQueue.forEach(({ reject }) => reject('刷新令牌失败'));
     this._retryQueue = [];
@@ -206,26 +207,20 @@ async function jsonResponseHook(
 ): Promise<void | Response> {
   // 对于200 OK 的响应，检查是否是业务错误
   if (response.ok) {
-    if (DEBUG) {
-      const ct = response.headers.get('Content-Type') || '';
-      console.log('Response Content-Type', ct);
-    }
-    let apiResult: ApiResult<unknown> | null = null;
-    try {
-      apiResult = await response.json<ApiResult<unknown>>();
+    const ct = response.headers.get('content-type') || '';
+    if (ct.includes('application/json')) {
+      const apiResult = await response.json<ApiResult<unknown>>();
       if (apiResult.errorCode !== 0) {
-        // 业务错误,构造一个假的 Response 返回,以触发 beforeError 钩子
+        // 业务错误,构造一个 Response 返回,以触发 beforeError 钩子
         if (DEBUG) {
           console.warn('Business error detected in JSON response:', apiResult);
         }
-        return new Response(JSON.stringify(apiResult), {
+        return new Response(response.body, {
           status: 400,
-          statusText: BUSINESS_ERROR_FALG,
+          statusText: BUSINESS_ERROR_FLAG,
           headers: response.headers,
         });
       }
-    } catch (e) {
-      console.warn('请求失败 (非 JSON 响应):', e);
     }
   }
 }
@@ -239,9 +234,9 @@ async function handleErrorHook(error: HTTPError): Promise<MyError> {
   } catch {
     // 解析失败，保持 apiResult 为 null
   }
-  if (status === 400 && statusText === BUSINESS_ERROR_FALG) {
+  if (status === 400 && statusText === BUSINESS_ERROR_FLAG) {
     // 业务错误
-    myError.name = BUSINESS_ERROR_FALG;
+    myError.name = BUSINESS_ERROR_FLAG;
     myError.message = apiResult.errorDesc || '业务异常';
     myError.errorCode = apiResult.errorCode;
     if (DEBUG) {
@@ -249,7 +244,7 @@ async function handleErrorHook(error: HTTPError): Promise<MyError> {
     }
   } else {
     // 非业务错误
-    myError.name = HTTP_ERROR_FALG;
+    myError.name = HTTP_ERROR_FLAG;
     myError.message = apiResult.errorDesc || `HTTP Error: ${status}`;
     if (DEBUG) {
       console.error('HTTP error detected:', myError.printError());
@@ -260,7 +255,7 @@ async function handleErrorHook(error: HTTPError): Promise<MyError> {
 
 const httpClient = ky.create({
   prefixUrl: '/api',
-  timeout: false,
+  timeout: TIMEOUT,
   hooks: {
     beforeRequest: [requestHook],
     afterResponse: [refreshTokenHook, jsonResponseHook],
