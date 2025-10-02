@@ -1,7 +1,7 @@
 import Login from '@/pages/login/login.tsx';
 import ErrorPage from '@/pages/ErrorPage.tsx';
 import Home from '@/pages/home/home.tsx';
-import { HomeOutlined, TagsOutlined, EditOutlined, SettingOutlined } from '@ant-design/icons';
+import { EditOutlined, HomeOutlined, SettingOutlined, TagsOutlined } from '@ant-design/icons';
 import type { RouterItem } from '@/types/route';
 import ProtectManagerLayout from '@/layout/ProtectManagerLayout';
 import User from '@/pages/system/user';
@@ -9,6 +9,7 @@ import Tag from '@/pages/tag/tag';
 import Post from '@/pages/post/post';
 import Role from '@/pages/system/role';
 import { Navigate } from 'react-router-dom';
+import Category from '@/pages/category/category.tsx';
 
 const routes: RouterItem[] = [
   {
@@ -45,6 +46,18 @@ const routes: RouterItem[] = [
           key: '/home',
           title: '首页',
           icon: <HomeOutlined />,
+          hideInMenu: false,
+          hideInBreadcrumb: false,
+        },
+      },
+      {
+        path: '/category',
+        element: <Category />,
+        errorElement: <ErrorPage />,
+        meta: {
+          key: '/category',
+          title: '分类管理',
+          icon: <TagsOutlined />,
           hideInMenu: false,
           hideInBreadcrumb: false,
         },

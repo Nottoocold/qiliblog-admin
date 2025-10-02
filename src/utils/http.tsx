@@ -1,7 +1,6 @@
-import ky, { HTTPError, type KyRequest, type KyResponse } from 'ky';
-import { type NormalizedOptions } from 'ky';
+import ky, { HTTPError, type KyRequest, type KyResponse, type NormalizedOptions } from 'ky';
 import { useUserStore } from '@/store/userStore';
-import { getAccessToken, getRefreshToken, setToken, clearToken } from './tokenUtils';
+import { clearToken, getAccessToken, getRefreshToken, setToken } from './tokenUtils';
 import type { MessageInstance } from 'antd/es/message/interface';
 import type { ApiResult } from '@/types/server';
 import type { LoginResponse } from '@/types/login';
@@ -216,7 +215,7 @@ async function jsonResponseHook(
         if (DEBUG) {
           console.warn('Business error detected in JSON response:', apiResult);
         }
-        return new Response(response.body, {
+        return new Response(JSON.stringify(apiResult), {
           status: 400,
           statusText: BUSINESS_ERROR_FLAG,
           headers: response.headers,
