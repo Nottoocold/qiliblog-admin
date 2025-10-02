@@ -1,15 +1,18 @@
-import type { BasePageParams, PageResult } from './server';
+import type { ApiResult, BasePageParams, PageResult } from './server';
 
 export interface TagVo {
   id: string;
   name: string;
   slug: string;
+  postCount: number;
   description?: string;
 }
 
 export type TagPageResponse = PageResult<TagVo>;
 
-export type TagListResponse = TagPageResponse['data']['list'];
+export type TagListResponse = ApiResult<TagVo[]>;
+
+export type TagResponse = ApiResult<TagVo>;
 
 export type TagQueryParams = Record<string, unknown | undefined> & BasePageParams;
 
@@ -23,8 +26,8 @@ export interface TagUpdateParams extends TagCreateParams {
   id: string;
 }
 
-export type TagCreateResponse = Readonly<TagVo>;
+export type TagCreateResponse = Readonly<ApiResult<TagVo>>;
 
-export type TagUpdateResponse = Readonly<TagVo>;
+export type TagUpdateResponse = Readonly<ApiResult<TagVo>>;
 
 export type TagDeleteResponse = void;
