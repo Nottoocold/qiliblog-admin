@@ -1,5 +1,5 @@
 import { LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
-import { App, Avatar, Dropdown, Space, type MenuProps } from 'antd';
+import { Avatar, Dropdown, Space, type MenuProps } from 'antd';
 import type React from 'react';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +7,7 @@ import { useUserStore } from '@/store/userStore';
 import { logout } from '@/services/auth.api';
 import { clearToken } from '@/utils/tokenUtils';
 import { useShallow } from 'zustand/shallow';
+import { useAntd } from '../AntdAppWrapper/AntdContext';
 
 const items: MenuProps['items'] = [
   {
@@ -23,9 +24,9 @@ const items: MenuProps['items'] = [
 
 const RightContent: React.FC = () => {
   const navigate = useNavigate();
-  const { message } = App.useApp();
-  const { setUserState } = useUserStore(
-    useShallow(state => ({ setUserState: state.setUserState }))
+  const { message } = useAntd();
+  const { setUserState, user } = useUserStore(
+    useShallow(state => ({ setUserState: state.setUserState, user: state.user }))
   );
 
   const onMenuClick: MenuProps['onClick'] = useCallback(
@@ -50,7 +51,7 @@ const RightContent: React.FC = () => {
       <div style={{ cursor: 'pointer', padding: '0', display: 'inline-block' }}>
         <Space>
           <Avatar icon={<UserOutlined />} />
-          <span>七里之外</span>
+          <span>{user?.nickname}</span>
         </Space>
       </div>
     </Dropdown>
