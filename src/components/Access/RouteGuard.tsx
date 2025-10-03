@@ -12,7 +12,7 @@ const RouteGuard = ({ children }: { children: React.ReactNode }) => {
     useShallow(state => [state.isAuthenticated, state.user])
   );
 
-  console.log(location.pathname, 'need to be protected');
+  //console.log(location.pathname, 'need to be protected');
 
   useEffect(() => {
     let isMounted = true;

@@ -3,36 +3,41 @@ import type { TagVo } from '@/types/tag';
 import { handleHttpError } from '@/utils/http';
 import { createAntdTableQuery } from '@/utils/queryUtils';
 import { PlusOutlined } from '@ant-design/icons';
-import { useAntdTable } from 'ahooks';
+import { useAntdTable, useBoolean, useCreation, useSetState } from 'ahooks';
 import { Button, Form, Input, Popconfirm, Space, Table, type TableProps } from 'antd';
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { TagCreate } from './components/TagCreate';
 import { useAntd } from '@/components/AntdAppWrapper/AntdContext';
 import { TagUpdate } from './components/TagUpdate';
 import { SearchForm } from '@/components/SearchForm/SearchForm';
 
 const Tag: React.FC = () => {
-  const query = createAntdTableQuery(getTagPage, {
-    sortEntry: [
-      { name: 'postCount', order: 'desc' },
-      { name: 'createTime', order: 'desc' },
-    ],
+  const [createOpen, createOpenAction] = useBoolean(false);
+  const [updateState, setUpdateState] = useSetState<{ open: boolean; editRecord: TagVo | null }>({
+    open: false,
+    editRecord: null,
   });
+  const query = useCreation(() => {
+    return createAntdTableQuery(getTagPage, {
+      sortEntry: [
+        { name: 'postCount', order: 'desc' },
+        { name: 'createTime', order: 'desc' },
+      ],
+    });
+  }, []);
   const [form] = Form.useForm();
   const { message } = useAntd();
   const { tableProps, search, refresh } = useAntdTable(query, {
     form,
     defaultParams: [{ current: 1, pageSize: 10 }, { word: '' }],
+    defaultType: 'simple',
+    debounceWait: 300,
+    refreshOnWindowFocus: true,
     onError(e) {
       handleHttpError(e);
     },
   });
   const { type, changeType, submit, reset } = search;
-  const [createOpen, setCreateOpen] = useState(false);
-  const [updateState, setUpdateState] = useState<{ open: boolean; editRecord: TagVo | null }>({
-    open: false,
-    editRecord: null,
-  });
 
   const onDelete = async (record: TagVo) => {
     return deleteTag(record.id)
@@ -81,7 +86,7 @@ const Tag: React.FC = () => {
     },
   ];
 
-  const searchConfig = useMemo(() => {
+  const searchConfig = useCreation(() => {
     return [
       {
         label: '关键词',
@@ -102,7 +107,7 @@ const Tag: React.FC = () => {
         fields={searchConfig}
       />
       <Space styles={{ item: { marginBottom: 16 } }}>
-        <Button type="primary" onClick={() => setCreateOpen(true)}>
+        <Button type="primary" onClick={createOpenAction.setTrue}>
           <PlusOutlined />
           新增
         </Button>
@@ -123,9 +128,9 @@ const Tag: React.FC = () => {
       />
       <TagCreate
         open={createOpen}
-        onClose={() => setCreateOpen(false)}
+        onClose={createOpenAction.setFalse}
         onCreateSuccess={data => {
-          setCreateOpen(false);
+          createOpenAction.toggle();
           message.success(`Tag${data.name}创建成功`);
           refresh();
         }}
