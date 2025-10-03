@@ -94,7 +94,7 @@ export default function ManagerLayout() {
           {/* 中间留空 */}
           <div style={{ flex: 1 }} />
           {/* 右边内容 */}
-          <div style={{ marginRight: 16 }}>
+          <div style={{ marginRight: 0 }}>
             <RightContent />
           </div>
         </Header>

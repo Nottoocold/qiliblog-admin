@@ -13,6 +13,7 @@ import { setToken } from '@/utils/tokenUtils';
 import { useShallow } from 'zustand/shallow';
 import { useBoolean } from 'ahooks';
 import { LogoIcon } from '@/components/CustomerIcon/Logo/Logo';
+import ThemeSwitch from '@/components/ThemeSwitch/ThemeSwitch';
 
 const { useToken } = theme;
 
@@ -103,6 +104,10 @@ const LoginPage = () => {
 
   return (
     <div className={styles.container} style={{ backgroundColor: token.colorBgContainer }}>
+      {/* 主题切换组件 */}
+      <div style={{ position: 'absolute', right: 16, top: 16 }}>
+        <ThemeSwitch buttonText="主题切换" />
+      </div>
       {/* 顶部Logo区域 */}
       <div className={styles.header}>
         <div className={styles.logoSection}>
