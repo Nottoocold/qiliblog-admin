@@ -4,11 +4,12 @@ import { handleHttpError } from '@/utils/http';
 import { createAntdTableQuery } from '@/utils/queryUtils';
 import { PlusOutlined } from '@ant-design/icons';
 import { useAntdTable } from 'ahooks';
-import { Button, Col, Form, Input, Popconfirm, Row, Space, Table, type TableProps } from 'antd';
-import React, { useState } from 'react';
+import { Button, Form, Input, Popconfirm, Space, Table, type TableProps } from 'antd';
+import React, { useMemo, useState } from 'react';
 import { TagCreate } from './components/TagCreate';
 import { useAntd } from '@/components/AntdAppWrapper/AntdContext';
 import { TagUpdate } from './components/TagUpdate';
+import { SearchForm } from '@/components/SearchForm/SearchForm';
 
 const Tag: React.FC = () => {
   const query = createAntdTableQuery(getTagPage, {
@@ -26,7 +27,7 @@ const Tag: React.FC = () => {
       handleHttpError(e);
     },
   });
-  const { submit, reset } = search;
+  const { type, changeType, submit, reset } = search;
   const [createOpen, setCreateOpen] = useState(false);
   const [updateState, setUpdateState] = useState<{ open: boolean; editRecord: TagVo | null }>({
     open: false,
@@ -44,7 +45,7 @@ const Tag: React.FC = () => {
 
   const columns: TableProps<TagVo>['columns'] = [
     {
-      title: '名称',
+      title: '标签名称',
       dataIndex: 'name',
       render: (text, record) => (
         <Button type="link" onClick={() => setUpdateState({ open: true, editRecord: record })}>
@@ -80,33 +81,32 @@ const Tag: React.FC = () => {
     },
   ];
 
-  const searchForm = (
-    <Form form={form}>
-      <Row gutter={24}>
-        <Col span={6}>
-          <Form.Item label="关键词" name="word">
-            <Input placeholder="name/slug" />
-          </Form.Item>
-        </Col>
-        <Button type="primary" onClick={submit}>
-          搜索
-        </Button>
-        <Button onClick={reset} style={{ marginLeft: 16 }}>
-          重置
-        </Button>
-      </Row>
+  const searchConfig = useMemo(() => {
+    return [
+      {
+        label: '关键词',
+        name: 'word',
+        content: <Input placeholder="name/slug" />,
+      },
+    ];
+  }, []);
+
+  return (
+    <div>
+      <SearchForm
+        form={form}
+        submit={submit}
+        reset={reset}
+        searchMode={type}
+        changeSearchMode={changeType}
+        fields={searchConfig}
+      />
       <Space styles={{ item: { marginBottom: 16 } }}>
         <Button type="primary" onClick={() => setCreateOpen(true)}>
           <PlusOutlined />
           新增
         </Button>
       </Space>
-    </Form>
-  );
-
-  return (
-    <div>
-      {searchForm}
       <Table
         rowKey="id"
         columns={columns}
