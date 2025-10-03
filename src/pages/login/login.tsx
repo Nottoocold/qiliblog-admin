@@ -1,14 +1,6 @@
 import { useState } from 'react';
-import { Form, Input, Button, Checkbox, Tabs, Divider, Space } from 'antd';
-import {
-  MobileOutlined,
-  LockOutlined,
-  UserOutlined,
-  AlipayOutlined,
-  TaobaoOutlined,
-  WeiboOutlined,
-  MailOutlined,
-} from '@ant-design/icons';
+import { Form, Input, Button, Tabs, Space, theme } from 'antd';
+import { MobileOutlined, LockOutlined, UserOutlined, MailOutlined } from '@ant-design/icons';
 import styles from './login.module.less';
 import type { LoginFormValues, LoginParams } from '@/types/login';
 import { LoginType } from '@/types/login.d';
@@ -19,16 +11,21 @@ import { getUserInfo, login } from '@/services/auth.api';
 import { useUserStore } from '@/store/userStore';
 import { setToken } from '@/utils/tokenUtils';
 import { useShallow } from 'zustand/shallow';
+import { useBoolean } from 'ahooks';
+import { LogoIcon } from '@/components/CustomerIcon/Logo/Logo';
+
+const { useToken } = theme;
 
 const LoginPage = () => {
+  const { token } = useToken();
   const { message } = useAntd();
   const { setUserState } = useUserStore(
     useShallow(state => ({ setUserState: state.setUserState }))
   );
   const [form] = Form.useForm<LoginFormValues>();
-  const [activeTab, setActiveTab] = useState<string>('account');
-  const [countdown, setCountdown] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState('account');
+  const [countdown, setCountdown] = useState(0);
+  const [loading, loadingAction] = useBoolean(false);
   const navigate = useNavigate();
   const location = useLocation();
   const from = decodeURIComponent(location.state?.from || '/');
@@ -63,8 +60,6 @@ const LoginPage = () => {
   };
 
   const onFinish = async (values: LoginFormValues) => {
-    console.log('登录参数:', values);
-    setLoading(true);
     let payload: LoginParams;
 
     switch (loginMethod) {
@@ -91,35 +86,29 @@ const LoginPage = () => {
         };
         break;
     }
-    setLoading(true);
+    loadingAction.setTrue();
     try {
       const loginResponse = await login(payload);
       setToken(loginResponse.data.accessToken, loginResponse.data.refreshToken);
       const userInfoResponse = await getUserInfo();
-      // 保存用户信息和token
+      // 保存用户信息和认证状态
       setUserState(userInfoResponse.data, true);
       message.success('登录成功');
       navigate(from, { replace: true });
     } catch (error) {
       handleHttpError(error);
     }
-    setLoading(false);
+    loadingAction.setFalse();
   };
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{ backgroundColor: token.colorBgContainer }}>
       {/* 顶部Logo区域 */}
       <div className={styles.header}>
         <div className={styles.logoSection}>
-          <svg height="48" width="48" className={styles.githubLogo}>
-            <path
-              fill="#000"
-              d="M24 0C10.7 0 0 10.7 0 24c0 10.6 6.9 19.6 16.5 22.8 1.2.2 1.6-.5 1.6-1.1v-4.2c-6.6 1.4-8-3.2-8-3.2-1.1-2.8-2.7-3.5-2.7-3.5-2.2-1.5.2-1.5.2-1.5 2.4.2 3.7 2.5 3.7 2.5 2.2 3.7 5.6 2.7 7 2.1.2-1.7.9-2.7 1.6-3.3-5.5-.6-11.3-2.8-11.3-12.3 0-2.7 1-4.9 2.5-6.6-.3-.6-1.1-3.1.2-6.5 0 0 2-.7 6.6 2.5 1.9-.5 4-.8 6-.8s4.1.3 6 .8c4.6-3.2 6.6-2.5 6.6-2.5 1.3 3.4.5 5.9.2 6.5 1.5 1.7 2.5 3.9 2.5 6.6 0 9.5-5.8 11.7-11.3 12.3.9.8 1.7 2.3 1.7 4.6v6.8c0 .7.4 1.3 1.6 1.1C41.1 43.6 48 34.6 48 24 48 10.7 37.3 0 24 0z"
-            />
-          </svg>
-          <h1 className={styles.platformName}>七里之外</h1>
+          <LogoIcon style={{ width: 100, height: 50 }} />
+          <h2 className={styles.platformDesc}>后台管理平台</h2>
         </div>
-        <p className={styles.platformDesc}>qiliblog博客后台管理平台</p>
       </div>
 
       {/* 登录表单区域 */}
@@ -144,7 +133,7 @@ const LoginPage = () => {
           ]}
         />
 
-        <Form form={form} name="login" onFinish={onFinish} autoComplete="off" size="large">
+        <Form form={form} name="login" onFinish={onFinish} size="large">
           {activeTab === 'phone' ? (
             <>
               {/* 手机号登录表单 */}
@@ -202,18 +191,6 @@ const LoginPage = () => {
             </>
           )}
 
-          {/* 自动登录和忘记密码 */}
-          <Form.Item>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Form.Item name="remember" valuePropName="checked" noStyle>
-                <Checkbox>自动登录</Checkbox>
-              </Form.Item>
-              <Button type="link" size="small">
-                忘记密码
-              </Button>
-            </div>
-          </Form.Item>
-
           {/* 登录按钮 */}
           <Form.Item>
             <Button type="primary" htmlType="submit" block loading={loading}>
@@ -221,16 +198,6 @@ const LoginPage = () => {
             </Button>
           </Form.Item>
         </Form>
-
-        {/* 其他登录方式 */}
-        <Divider plain>其他登录方式</Divider>
-        <div className={styles.socialLogin}>
-          <Space size="large">
-            <Button type="text" icon={<AlipayOutlined />} className={styles.socialIcon} />
-            <Button type="text" icon={<TaobaoOutlined />} className={styles.socialIcon} />
-            <Button type="text" icon={<WeiboOutlined />} className={styles.socialIcon} />
-          </Space>
-        </div>
       </div>
     </div>
   );
