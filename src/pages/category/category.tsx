@@ -2,13 +2,14 @@ import { handleHttpError } from '@/utils/http';
 import { createAntdTableQuery } from '@/utils/queryUtils';
 import { PlusOutlined } from '@ant-design/icons';
 import { useAntdTable } from 'ahooks';
-import { Button, Col, Form, Input, Popconfirm, Row, Space, Table, type TableProps } from 'antd';
-import React, { useState } from 'react';
+import { Button, Form, Input, Popconfirm, Space, Table, type TableProps } from 'antd';
+import React, { useMemo, useState } from 'react';
 import { useAntd } from '@/components/AntdAppWrapper/AntdContext';
 import { deleteCategory, getCategoryPage } from '@/services/category.api.ts';
 import type { CategoryVo } from '@/types/category';
 import { CategoryCreate } from '@/pages/category/components/CategoryCreate.tsx';
 import { CategoryUpdate } from '@/pages/category/components/CategoryUpdate.tsx';
+import { SearchForm } from '@/components/SearchForm/SearchForm';
 
 export const Category: React.FC = () => {
   const query = createAntdTableQuery(getCategoryPage, {
@@ -22,11 +23,12 @@ export const Category: React.FC = () => {
   const { tableProps, search, refresh } = useAntdTable(query, {
     form,
     defaultParams: [{ current: 1, pageSize: 10 }, { word: '' }],
+    defaultType: 'advance',
     onError(e) {
       handleHttpError(e);
     },
   });
-  const { submit, reset } = search;
+  const { type, changeType, submit, reset } = search;
   const [createOpen, setCreateOpen] = useState(false);
   const [updateState, setUpdateState] = useState<{ open: boolean; editRecord: CategoryVo | null }>({
     open: false,
@@ -80,33 +82,32 @@ export const Category: React.FC = () => {
     },
   ];
 
-  const searchForm = (
-    <Form form={form}>
-      <Row gutter={24}>
-        <Col span={6}>
-          <Form.Item label="关键词" name="word">
-            <Input placeholder="name/slug" />
-          </Form.Item>
-        </Col>
-        <Button type="primary" onClick={submit}>
-          搜索
-        </Button>
-        <Button onClick={reset} style={{ marginLeft: 16 }}>
-          重置
-        </Button>
-      </Row>
+  const searchConfig = useMemo(() => {
+    return [
+      {
+        label: '关键词',
+        name: 'word',
+        content: <Input placeholder="name/slug" />,
+      },
+    ];
+  }, []);
+
+  return (
+    <div>
+      <SearchForm
+        form={form}
+        submit={submit}
+        reset={reset}
+        searchMode={type}
+        changeSearchMode={changeType}
+        fields={searchConfig}
+      />
       <Space styles={{ item: { marginBottom: 16 } }}>
         <Button type="primary" onClick={() => setCreateOpen(true)}>
           <PlusOutlined />
           新增
         </Button>
       </Space>
-    </Form>
-  );
-
-  return (
-    <div>
-      {searchForm}
       <Table
         rowKey="id"
         columns={columns}
