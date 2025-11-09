@@ -1,10 +1,11 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import routes from '@/router/router';
 import menuUtils from '@/utils/menuUtils';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { Button, Layout, Menu, theme, type MenuProps } from 'antd';
 import RightContent from '@/components/RightContent/RightContent';
+import { useToggle } from 'ahooks';
 
 const { Header, Sider, Content, Footer } = Layout;
 
@@ -21,7 +22,7 @@ const contentStyle: React.CSSProperties = {
 };
 
 export default function ManagerLayout() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useToggle(false);
   const navigate = useNavigate();
   const location = useLocation();
   const {
@@ -84,7 +85,7 @@ export default function ManagerLayout() {
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={() => setCollapsed.toggle()}
             style={{
               fontSize: '16px',
               width: 64,
