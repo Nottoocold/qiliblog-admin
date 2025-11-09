@@ -40,14 +40,14 @@ export const SearchForm: React.FC<SearchFormProps> = ({
       <Row gutter={24}>
         {expand
           ? realFields.map(field => (
-              <Col span={span}>
+              <Col span={span} key={field.name}>
                 <Form.Item label={field.label} name={field.name}>
                   {field.content}
                 </Form.Item>
               </Col>
             ))
           : realFields.slice(0, cols).map(field => (
-              <Col span={span}>
+              <Col span={span} key={field.name}>
                 <Form.Item label={field.label} name={field.name}>
                   {field.content}
                 </Form.Item>
