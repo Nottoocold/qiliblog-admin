@@ -26,9 +26,23 @@ export default function ManagerLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const {
-    token: { colorBgContainer, borderRadiusLG },
+    token: { colorBgContainer, borderRadiusLG, Layout: layoutToken = { headerHeight: 64 } },
   } = theme.useToken();
+
   const menus = useMemo(() => menuUtils.generateMenus(routes), []);
+
+  // 计算需要展开的菜单项，基于路由配置自动匹配（支持动态路由）
+  const computedOpenKeys = useMemo(() => {
+    return menuUtils.findOpenMenuKeys(location.pathname, routes);
+  }, [location.pathname]);
+
+  // 菜单展开状态，支持用户手动操作
+  const [openKeys, setOpenKeys] = React.useState<string[]>(computedOpenKeys);
+
+  // 当路径变化时，更新展开的菜单项
+  React.useEffect(() => {
+    setOpenKeys(computedOpenKeys);
+  }, [computedOpenKeys]);
 
   const menuSelect: MenuProps['onSelect'] = ({ key }) => {
     if (key !== location.pathname) {
@@ -36,22 +50,22 @@ export default function ManagerLayout() {
     }
   };
 
-  // 计算当前路径对应的展开菜单项
-  const getDefaultOpenKeys = () => {
-    const pathSnippets = location.pathname.split('/').filter(i => i);
-    const keys: string[] = [];
-    let currentPath = '';
-
-    pathSnippets.forEach(snippet => {
-      currentPath += `/${snippet}`;
-      keys.push(currentPath);
-    });
-
-    return keys;
+  const handleOpenChange: MenuProps['onOpenChange'] = keys => {
+    console.log('onOpenChange', keys);
+    setOpenKeys(keys);
   };
 
+  // 计算选中的菜单项，基于路由配置自动匹配
+  const selectedKeys = useMemo(() => {
+    const matchedKey = menuUtils.findMatchedMenuKey(location.pathname, routes);
+    // 如果找到匹配的菜单键，返回它；否则返回路径名作为备选
+    return matchedKey ? [matchedKey] : [location.pathname];
+  }, [location.pathname]);
+
+  const contentHeight = window.innerHeight - (layoutToken.headerHeight as number) - (2 * (contentStyle.padding as number)) - (footerStyle.height as number);
+
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ height: '100vh', overflow: 'hidden' }}>
       <Sider
         trigger={null}
         collapsible
@@ -63,12 +77,13 @@ export default function ManagerLayout() {
           theme="light"
           mode="inline"
           onSelect={menuSelect}
-          selectedKeys={[location.pathname]}
-          defaultOpenKeys={getDefaultOpenKeys()}
+          selectedKeys={selectedKeys}
+          openKeys={openKeys}
+          onOpenChange={handleOpenChange}
           items={menus}
         />
       </Sider>
-      <Layout>
+      <Layout style={{ overflow: 'hidden' }}>
         <Header
           style={{
             padding: 0,
@@ -108,6 +123,7 @@ export default function ManagerLayout() {
               overflowY: 'auto',
               overflowX: 'hidden',
               padding: 12,
+              height: contentHeight,
             }}
           >
             <Outlet />
