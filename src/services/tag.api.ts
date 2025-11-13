@@ -1,6 +1,7 @@
 import type {
   TagCreateParams,
   TagCreateResponse,
+  TagListResponse,
   TagPageResponse,
   TagQueryParams,
   TagResponse,
@@ -32,4 +33,11 @@ export const updateTag = (tag: TagUpdateParams) => {
 
 export const deleteTag = (id: string) => {
   return tagApi.delete(`tag/${id}`).json<void>();
+};
+
+/**
+ * 获取标签列表（不分页，用于下拉选择）
+ */
+export const getTagList = () => {
+  return tagApi.get('tag/list').json<TagListResponse>();
 };

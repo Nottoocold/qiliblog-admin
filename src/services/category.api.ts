@@ -3,6 +3,7 @@ import { serializeParams } from '@/utils/urlUtils';
 import type {
   CategoryCreateParams,
   CategoryCreateResponse,
+  CategoryListResponse,
   CategoryPageResponse,
   CategoryQueryParams,
   CategoryResponse,
@@ -34,4 +35,11 @@ export const updateCategory = (category: CategoryUpdateParams) => {
 
 export const deleteCategory = (id: string) => {
   return categoryApi.delete(`category/${id}`).json<void>();
+};
+
+/**
+ * 获取分类列表（不分页，用于下拉选择）
+ */
+export const getCategoryList = (params?: CategoryQueryParams) => {
+  return categoryApi.get('category/list', { searchParams: serializeParams(params ?? {}) }).json<CategoryListResponse>();
 };
