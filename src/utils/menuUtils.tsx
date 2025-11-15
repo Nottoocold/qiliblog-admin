@@ -33,13 +33,13 @@ const pathToRegex = (path: string): RegExp => {
   if (path === '' || path === '/') {
     return /^\/?$/;
   }
-  
+
   // 将路径参数 :param 替换为正则表达式
   const pattern = path
     .replace(/\//g, '\\/') // 转义斜杠
     .replace(/:\w+/g, '[^/]+') // 将 :id 替换为 [^/]+
     .replace(/\*/g, '.*'); // 支持通配符
-  
+
   return new RegExp(`^${pattern}$`);
 };
 
@@ -50,13 +50,13 @@ const matchPath = (pathname: string, routePath: string | undefined): boolean => 
   if (!routePath) {
     return false;
   }
-  
+
   // 处理绝对路径
   if (routePath.startsWith('/')) {
     const regex = pathToRegex(routePath);
     return regex.test(pathname);
   }
-  
+
   // 处理相对路径（子路由）
   // 这种情况下需要与父路径组合
   return false;
@@ -70,16 +70,16 @@ const getFullPath = (route: RouterItem, parentPath: string = ''): string => {
   if (!route.path && route.index) {
     return parentPath || '/';
   }
-  
+
   if (!route.path) {
     return parentPath;
   }
-  
+
   if (route.path.startsWith('/')) {
     // 绝对路径
     return route.path;
   }
-  
+
   // 相对路径，需要与父路径组合
   // 确保父路径以 / 结尾（除非是根路径）
   const normalizedParentPath = parentPath === '/' ? '' : parentPath;
@@ -100,7 +100,7 @@ const extractMenuRoutes = (
   routes.forEach(route => {
     const fullPath = getFullPath(route, parentPath);
     const routeKey = route.meta?.key || fullPath;
-    
+
     // 如果路由显示在菜单中，添加到菜单路由列表
     if (!route.meta?.hideInMenu && route.meta?.key) {
       menuRoutes.push({
@@ -109,13 +109,13 @@ const extractMenuRoutes = (
         children: route.children,
       });
     }
-    
+
     // 递归处理子路由
     if (route.children) {
       extractMenuRoutes(route.children, fullPath, menuRoutes);
     }
   });
-  
+
   return menuRoutes;
 };
 
@@ -123,28 +123,25 @@ const extractMenuRoutes = (
  * 查找匹配当前路径的菜单键
  * 支持动态路由匹配，如果当前路径是某个菜单项的子路由，返回父菜单项的 key
  */
-const findMatchedMenuKey = (
-  pathname: string,
-  routes: RouterItem[]
-): string | null => {
+const findMatchedMenuKey = (pathname: string, routes: RouterItem[]): string | null => {
   // 提取所有菜单路由（key 和 path 的映射）
   const menuRoutes = extractMenuRoutes(routes);
-  
+
   // 按路径长度从长到短排序，优先匹配更具体的路径
   const sortedMenuRoutes = [...menuRoutes].sort((a, b) => b.path.length - a.path.length);
-  
+
   // 尝试匹配每个菜单路由
   for (const menuRoute of sortedMenuRoutes) {
     // 1. 精确匹配
     if (menuRoute.path === pathname || menuRoute.key === pathname) {
       return menuRoute.key;
     }
-    
+
     // 2. 动态路由匹配（使用正则表达式）
     if (matchPath(pathname, menuRoute.path)) {
       return menuRoute.key;
     }
-    
+
     // 3. 前缀匹配（当前路径是菜单路由的子路由）
     // 例如：pathname = '/post/123/edit', menuRoute.path = '/post'
     if (
@@ -155,7 +152,7 @@ const findMatchedMenuKey = (
       return menuRoute.key;
     }
   }
-  
+
   // 如果没有找到匹配，返回 null
   return null;
 };
@@ -169,17 +166,17 @@ const isPathMatchRoute = (
   parentPath: string = ''
 ): boolean => {
   const fullPath = getFullPath(route, parentPath);
-  
+
   // 精确匹配
   if (fullPath === pathname) {
     return true;
   }
-  
+
   // 动态路由匹配
   if (matchPath(pathname, fullPath)) {
     return true;
   }
-  
+
   // 前缀匹配（当前路径是该路由的子路由）
   if (
     fullPath !== '/' &&
@@ -188,7 +185,7 @@ const isPathMatchRoute = (
   ) {
     return true;
   }
-  
+
   // 递归检查子路由
   if (route.children) {
     for (const childRoute of route.children) {
@@ -197,7 +194,7 @@ const isPathMatchRoute = (
       }
     }
   }
-  
+
   return false;
 };
 
@@ -215,7 +212,7 @@ const findOpenMenuKeys = (
     const routeKey = route.meta?.key || fullPath;
     const isMenuRoute = !route.meta?.hideInMenu && route.meta?.key;
     const hasChildren = route.children && route.children.length > 0;
-    
+
     // 如果当前路径匹配这个路由或其子路由
     if (isPathMatchRoute(pathname, route, parentPath)) {
       // 如果这个路由有子路由，需要展开它
@@ -225,7 +222,7 @@ const findOpenMenuKeys = (
           openKeys.push(routeKey);
         }
       }
-      
+
       // 继续在子路由中查找
       if (route.children) {
         findOpenMenuKeys(pathname, route.children, fullPath, openKeys);
@@ -233,12 +230,7 @@ const findOpenMenuKeys = (
     } else {
       // 即使当前路径不完全匹配，如果路径以当前路由开头，也可能需要展开
       // 例如：pathname = '/post/123/edit', route.path = '/post'
-      if (
-        fullPath !== '/' &&
-        pathname.startsWith(fullPath) &&
-        hasChildren &&
-        isMenuRoute
-      ) {
+      if (fullPath !== '/' && pathname.startsWith(fullPath) && hasChildren && isMenuRoute) {
         // 检查是否有子路由匹配
         if (route.children) {
           const childMatches = route.children.some(childRoute =>
@@ -252,7 +244,7 @@ const findOpenMenuKeys = (
       }
     }
   }
-  
+
   return openKeys;
 };
 

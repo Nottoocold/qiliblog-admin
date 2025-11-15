@@ -62,7 +62,11 @@ export default function ManagerLayout() {
     return matchedKey ? [matchedKey] : [location.pathname];
   }, [location.pathname]);
 
-  const contentHeight = window.innerHeight - (layoutToken.headerHeight as number) - (2 * (contentStyle.padding as number)) - (footerStyle.height as number);
+  const contentHeight =
+    window.innerHeight -
+    (layoutToken.headerHeight as number) -
+    2 * (contentStyle.padding as number) -
+    (footerStyle.height as number);
 
   return (
     <Layout style={{ height: '100vh', overflow: 'hidden' }}>
