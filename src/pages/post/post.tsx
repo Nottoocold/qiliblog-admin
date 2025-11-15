@@ -49,11 +49,8 @@ import { getCategoryList } from '@/services/category.api';
 import { getTagList } from '@/services/tag.api';
 import type { CategoryVo } from '@/types/category';
 import type { TagVo } from '@/types/tag';
-import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
-import relativeTime from 'dayjs/plugin/relativeTime';
-
-dayjs.extend(relativeTime);
+import { getRelativeTime } from '@/utils/dateUtils';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -456,7 +453,7 @@ const Post: React.FC = () => {
                             </Paragraph>
                           )}
                           <Divider style={{ margin: '8px 0' }} />
-                          <Space size="small" wrap>
+                          <Space size="small">
                             <Tag color="blue">{post.category.name}</Tag>
                             {post.tagList && post.tagList.length > 0
                               ? post.tagList
@@ -473,7 +470,9 @@ const Post: React.FC = () => {
                                 <EyeOutlined /> {post.viewCount}
                               </span>
                               {post.authorName && <span>{post.authorName}</span>}
-                              <span>{dayjs(post.publishedTime).fromNow()}</span>
+                              {post.status === 1 ? (
+                                <span>{getRelativeTime(post.publishedTime)} published</span>
+                              ) : null}
                             </Space>
                           </div>
                         </div>
