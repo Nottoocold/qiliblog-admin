@@ -1,14 +1,15 @@
 import type { PageResult, BasePageParams } from '@/types/server';
 
-interface TableQueryOptions<T> {
+interface TableQueryOptions<T, P extends BasePageParams & Record<string, unknown>> {
   delay?: number; // 模拟延迟时间
   sortEntry?: { name: string; order: 'asc' | 'desc' | undefined }[];
+  beforeRequest?: (params: P) => P; // 请求前处理函数
   transform?: (data: T) => T; // 数据转换函数
 }
 
 export const createAntdTableQuery = <T, P extends BasePageParams & Record<string, unknown>>(
   apiCall: (params: P) => Promise<PageResult<T>>,
-  options?: TableQueryOptions<T>
+  options?: TableQueryOptions<T, P>
 ) => {
   return async (
     pageParams: { current: number; pageSize: number },
@@ -18,7 +19,7 @@ export const createAntdTableQuery = <T, P extends BasePageParams & Record<string
       ?.map(entry => `${entry.name} ${entry.order || 'asc'}`)
       .join(',');
     const params = { ...pageParams, ...formData, sortBy } as P;
-    const resp = await apiCall(params);
+    const resp = await apiCall(options?.beforeRequest?.(params) ?? params);
 
     // 如果设置了延迟
     const delay = options?.delay ?? 300;

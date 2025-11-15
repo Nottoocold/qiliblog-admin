@@ -29,7 +29,6 @@ import {
   Empty,
   Spin,
   Divider,
-  Modal,
   Pagination,
 } from 'antd';
 import React from 'react';
@@ -50,7 +49,7 @@ import { getTagList } from '@/services/tag.api';
 import type { CategoryVo } from '@/types/category';
 import type { TagVo } from '@/types/tag';
 import { useNavigate } from 'react-router-dom';
-import { getRelativeTime } from '@/utils/dateUtils';
+import { getEndOfDay, getRelativeTime, getStartOfDay } from '@/utils/dateUtils';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -67,11 +66,22 @@ const Post: React.FC = () => {
   const query = useCreation(() => {
     return createAntdTableQuery(getPostPage, {
       sortEntry: [{ name: 'createTime', order: 'desc' }],
+      beforeRequest(params) {
+        // 处理时间范围查询
+        const { dateRange, ...rest } = params;
+        if (dateRange && Array.isArray(dateRange) && dateRange.length === 2) {
+          return {
+            ...rest,
+            dateRange: [getStartOfDay(dateRange[0]), getEndOfDay(dateRange[1])],
+          };
+        }
+        return params;
+      },
     });
   }, []);
 
   const [form] = Form.useForm();
-  const { message: antdMessage } = useAntd();
+  const { message: antdMessage, modal } = useAntd();
   const { run, params, tableProps, search, refresh } = useAntdTable(query, {
     form,
     defaultParams: [
@@ -235,13 +245,7 @@ const Post: React.FC = () => {
       {
         label: '发布时间',
         name: 'dateRange',
-        content: (
-          <RangePicker
-            showTime
-            format="YYYY-MM-DD HH:mm:ss"
-            placeholder={['开始时间', '结束时间']}
-          />
-        ),
+        content: <RangePicker placeholder={['开始时间', '结束时间']} />,
       },
     ];
   }, [categories, tags, loadingCategories, loadingTags]);
@@ -250,11 +254,8 @@ const Post: React.FC = () => {
   const handleSearch = () => {
     const values = form.getFieldsValue();
     if (values.dateRange && values.dateRange.length === 2) {
-      values.startDate = values.dateRange[0].format('YYYY-MM-DD HH:mm:ss');
-      values.endDate = values.dateRange[1].format('YYYY-MM-DD HH:mm:ss');
+      //values.dateRange = [formatDateTime(values.dateRange[0]), formatDateTime(values.dateRange[1])];
     }
-    delete values.dateRange;
-    form.setFieldsValue(values);
     submit();
   };
 
@@ -304,7 +305,7 @@ const Post: React.FC = () => {
         icon: <DeleteOutlined />,
         danger: true,
         onClick: () => {
-          Modal.confirm({
+          modal.confirm({
             title: '确认删除',
             content: `确定要删除文章"${record.title}"吗？`,
             okText: '确定',

@@ -120,7 +120,7 @@ export const formatTime = (
  * @param date 日期时间字符串
  * @returns Dayjs 对象
  */
-export const parseDateTime = (date: string | Date | number): Dayjs => {
+export const parseDateTime = (date: string | Date | number | Dayjs): Dayjs => {
   return dayjs(date);
 };
 
@@ -204,6 +204,14 @@ export const getDateTimeRange = (
  */
 export const getTodayRange = (): { startTime: string; endTime: string } => {
   return getDateTimeRange(dayjs());
+};
+
+export const getStartOfDay = (date: Dayjs | Date | string | number): string => {
+  return getDateTimeRange(date).startTime;
+};
+
+export const getEndOfDay = (date: Dayjs | Date | string | number): string => {
+  return getDateTimeRange(date).endTime;
 };
 
 /**
