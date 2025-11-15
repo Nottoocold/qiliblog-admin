@@ -7,8 +7,10 @@ import ProtectManagerLayout from '@/layout/ProtectManagerLayout';
 import User from '@/pages/system/user';
 import Tag from '@/pages/tag/tag';
 import Post from '@/pages/post/post';
+import PostCreate from '@/pages/post/PostCreate';
+import PostEdit from '@/pages/post/PostEdit';
 import Role from '@/pages/system/role';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import Category from '@/pages/category/category.tsx';
 
 const routes: RouterItem[] = [
@@ -76,7 +78,7 @@ const routes: RouterItem[] = [
       },
       {
         path: '/post',
-        element: <Post />,
+        element: <Outlet />,
         errorElement: <ErrorPage />,
         meta: {
           key: '/post',
@@ -85,6 +87,35 @@ const routes: RouterItem[] = [
           hideInMenu: false,
           hideInBreadcrumb: false,
         },
+        children: [
+          {
+            index: true,
+            element: <Post />,
+            errorElement: <ErrorPage />,
+          },
+          {
+            path: 'new',
+            element: <PostCreate />,
+            errorElement: <ErrorPage />,
+            meta: {
+              key: '/post/new',
+              title: '新建文章',
+              hideInMenu: true,
+              hideInBreadcrumb: false,
+            },
+          },
+          {
+            path: ':id/edit',
+            element: <PostEdit />,
+            errorElement: <ErrorPage />,
+            meta: {
+              key: '/post/:id/edit',
+              title: '编辑文章',
+              hideInMenu: true,
+              hideInBreadcrumb: false,
+            },
+          },
+        ],
       },
       {
         path: '/system',
