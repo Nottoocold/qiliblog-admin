@@ -15,15 +15,15 @@ const RouteGuard = ({ children }: { children: React.ReactNode }) => {
   //console.log(location.pathname, 'need to be protected');
 
   useEffect(() => {
-    let isMounted = true;
     // 检查用户是否已认证
-    if (isMounted) {
-      console.log('isAuthenticated:', isAuthenticated, 'user:', user);
-      setisValid(isAuthenticated || !!user);
+    const flag = isAuthenticated || !!user;
+    if (flag) {
+      setTimeout(() => {
+        setisValid(true);
+      }, 1000); // 模拟异步验证延迟
+    } else {
+      setisValid(false);
     }
-    return () => {
-      isMounted = false;
-    };
   }, [isAuthenticated, user]);
 
   useEffect(() => {

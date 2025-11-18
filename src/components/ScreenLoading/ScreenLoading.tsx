@@ -3,7 +3,7 @@ import React from 'react';
 
 const ScreenLoading: React.FC<SpinProps> = props => {
   const _props = { fullscreen: true, tip: 'Loading...', ...props };
-  return <Spin {..._props} />;
+  return <Spin {..._props} size="large" />;
 };
 
 export default ScreenLoading;
