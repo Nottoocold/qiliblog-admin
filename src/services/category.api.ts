@@ -21,6 +21,12 @@ export const getCategoryPage = (params: CategoryQueryParams) => {
     .json<CategoryPageResponse>();
 };
 
+export const getCategoryList = (params?: CategoryQueryParams) => {
+  return categoryApi
+    .get('category/list', { searchParams: serializeParams(params ?? {}) })
+    .json<CategoryListResponse>();
+};
+
 export const getCategory = (id: string) => {
   return categoryApi.get(`category/${id}`).json<CategoryResponse>();
 };
@@ -35,11 +41,4 @@ export const updateCategory = (category: CategoryUpdateParams) => {
 
 export const deleteCategory = (id: string) => {
   return categoryApi.delete(`category/${id}`).json<void>();
-};
-
-/**
- * 获取分类列表（不分页，用于下拉选择）
- */
-export const getCategoryList = (params?: CategoryQueryParams) => {
-  return categoryApi.get('category/list', { searchParams: serializeParams(params ?? {}) }).json<CategoryListResponse>();
 };

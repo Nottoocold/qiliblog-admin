@@ -86,7 +86,7 @@ const Post: React.FC = () => {
     form,
     defaultParams: [
       { current: 1, pageSize: 4 },
-      { word: '', status: undefined, categoryId: undefined, tagId: undefined, dateRange: [] },
+      { keyword: '', status: undefined, categoryId: undefined, tagId: undefined, dateRange: [] },
     ],
     defaultType: 'simple',
     debounceWait: 300,
@@ -99,28 +99,40 @@ const Post: React.FC = () => {
 
   // 加载分类列表
   React.useEffect(() => {
+    let mounted = true;
     setLoadingCategories(true);
     getCategoryList()
       .then(resp => {
-        setCategories(resp.data);
+        if (mounted) {
+          setCategories(resp.data);
+        }
       })
       .catch(handleHttpError)
       .finally(() => {
         setLoadingCategories(false);
       });
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // 加载标签列表
   React.useEffect(() => {
+    let mounted = true;
     setLoadingTags(true);
     getTagList()
       .then(resp => {
-        setTags(resp.data);
+        if (mounted) {
+          setTags(resp.data);
+        }
       })
       .catch(handleHttpError)
       .finally(() => {
         setLoadingTags(false);
       });
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // 状态标签映射
@@ -190,7 +202,7 @@ const Post: React.FC = () => {
     return [
       {
         label: '关键词',
-        name: 'word',
+        name: 'keyword',
         content: <Input placeholder="搜索标题或内容" prefix={<SearchOutlined />} />,
       },
       {
@@ -213,14 +225,9 @@ const Post: React.FC = () => {
             allowClear
             loading={loadingCategories}
             showSearch
+            options={categories.map(category => ({ label: category.name, value: category.id }))}
             optionFilterProp="children"
-          >
-            {categories.map(category => (
-              <Option key={category.id} value={category.id}>
-                {category.name}
-              </Option>
-            ))}
-          </Select>
+          />
         ),
       },
       {
@@ -232,14 +239,9 @@ const Post: React.FC = () => {
             allowClear
             loading={loadingTags}
             showSearch
+            options={tags.map(tag => ({ label: tag.name, value: tag.id }))}
             optionFilterProp="children"
-          >
-            {tags.map(tag => (
-              <Option key={tag.id} value={tag.id}>
-                {tag.name}
-              </Option>
-            ))}
-          </Select>
+          />
         ),
       },
       {
@@ -249,15 +251,6 @@ const Post: React.FC = () => {
       },
     ];
   }, [categories, tags, loadingCategories, loadingTags]);
-
-  // 处理时间范围查询
-  const handleSearch = () => {
-    const values = form.getFieldsValue();
-    if (values.dateRange && values.dateRange.length === 2) {
-      //values.dateRange = [formatDateTime(values.dateRange[0]), formatDateTime(values.dateRange[1])];
-    }
-    submit();
-  };
 
   // 获取操作菜单
   const getActionMenu = (record: PostVo): MenuProps['items'] => {
@@ -319,9 +312,15 @@ const Post: React.FC = () => {
     ];
   };
 
-  const posts = tableProps.dataSource || [];
+  const posts = (tableProps.dataSource || []).map(item => {
+    const { categoryId, tagIds } = item;
+    item.category = categories.find(category => category.id === categoryId)!;
+    item.tagList = tags.filter(tag => tagIds.includes(tag.id));
+    return item;
+  });
   const loading = tableProps.loading || false;
   const pagination = tableProps.pagination;
+
   return (
     <>
       <div
@@ -355,9 +354,8 @@ const Post: React.FC = () => {
       <Card style={{ marginBottom: 16 }}>
         <SearchForm
           form={form}
-          submit={handleSearch}
+          submit={submit}
           reset={() => {
-            form.resetFields();
             reset();
             setSelectedRowKeys([]);
           }}
@@ -372,7 +370,7 @@ const Post: React.FC = () => {
           <Empty description="暂无文章" />
         ) : (
           <Row gutter={[16, 16]}>
-            {posts.map((post: PostVo) => {
+            {posts.map(post => {
               const statusTag = statusTagMap[post.status];
               return (
                 <Col key={post.id} xs={24} sm={12} lg={8} xl={6}>

@@ -19,6 +19,12 @@ export const getTagPage = (params: TagQueryParams) => {
   return tagApi.get('tag/page', { searchParams: serializeParams(params) }).json<TagPageResponse>();
 };
 
+export const getTagList = (params?: TagQueryParams) => {
+  return tagApi
+    .get('tag/list', { searchParams: serializeParams(params ?? {}) })
+    .json<TagListResponse>();
+};
+
 export const getTag = (id: string) => {
   return tagApi.get(`tag/${id}`).json<TagResponse>();
 };
@@ -33,11 +39,4 @@ export const updateTag = (tag: TagUpdateParams) => {
 
 export const deleteTag = (id: string) => {
   return tagApi.delete(`tag/${id}`).json<void>();
-};
-
-/**
- * 获取标签列表（不分页，用于下拉选择）
- */
-export const getTagList = () => {
-  return tagApi.get('tag/list').json<TagListResponse>();
 };
