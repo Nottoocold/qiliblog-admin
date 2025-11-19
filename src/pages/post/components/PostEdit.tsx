@@ -39,6 +39,8 @@ import dayjs from 'dayjs';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAntd } from '@/components/AntdAppWrapper/AntdContext';
 import { convertBooleanFieldsToNumber } from '@/utils/typeConverter';
+// 添加 Markdown 编辑器导入
+import MDEditor from '@uiw/react-md-editor';
 
 const { TextArea } = Input;
 
@@ -55,6 +57,12 @@ const PostEdit: React.FC = () => {
   const [loadingTags, setLoadingTags] = useState(false);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [post, setPost] = useState<PostVo | null>(null);
+
+  const cateroryOptions = categories.map(category => ({
+    label: category.name,
+    value: category.id,
+  }));
+  const tagOptions = tags.map(tag => ({ label: tag.name, value: tag.id }));
 
   // 加载分类列表
   useEffect(() => {
@@ -259,9 +267,9 @@ const PostEdit: React.FC = () => {
           onFinish={values => onFinish(values, false)}
           initialValues={{
             status: ArticleStatus.DRAFT,
-            top: 0,
-            recommend: 0,
-            allowComment: 1,
+            top: false,
+            recommend: false,
+            allowComment: true,
           }}
         >
           <Form.Item name="id" hidden>
@@ -294,12 +302,8 @@ const PostEdit: React.FC = () => {
             name="content"
             rules={[{ required: true, message: '请输入文章内容' }]}
           >
-            <TextArea
-              placeholder="请输入文章内容（支持 Markdown 格式）"
-              rows={20}
-              showCount
-              maxLength={50000}
-            />
+            {/* 替换 TextArea 为 Markdown 编辑器 */}
+            <MDEditor height={400} />
           </Form.Item>
 
           <Form.Item label="文章摘要" name="summary">
@@ -307,7 +311,7 @@ const PostEdit: React.FC = () => {
               placeholder="请输入文章摘要（如果不填写，将自动从内容中提取）"
               rows={3}
               showCount
-              maxLength={500}
+              maxLength={100}
             />
           </Form.Item>
 
@@ -319,8 +323,7 @@ const PostEdit: React.FC = () => {
                   allowClear
                   loading={loadingCategories}
                   showSearch
-                  options={categories.map(cate => ({ label: cate.id, value: cate.name }))}
-                  optionFilterProp="children"
+                  options={cateroryOptions}
                 />
               </Form.Item>
             </Col>
@@ -332,8 +335,7 @@ const PostEdit: React.FC = () => {
                   allowClear
                   loading={loadingTags}
                   showSearch
-                  options={tags.map(tag => ({ labek: tag.id, value: tag.name }))}
-                  optionFilterProp="children"
+                  options={tagOptions}
                 />
               </Form.Item>
             </Col>

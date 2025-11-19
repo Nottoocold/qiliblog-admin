@@ -28,6 +28,8 @@ import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { useAntd } from '@/components/AntdAppWrapper/AntdContext';
 import { convertBooleanFieldsToNumber } from '@/utils/typeConverter';
+// 添加 Markdown 编辑器导入
+import MDEditor from '@uiw/react-md-editor';
 
 const { TextArea } = Input;
 
@@ -185,9 +187,9 @@ const PostCreate: React.FC = () => {
           onFinish={values => onFinish(values, false)}
           initialValues={{
             status: ArticleStatus.DRAFT,
-            top: 0,
-            recommend: 0,
-            allowComment: 1,
+            top: false,
+            recommend: false,
+            allowComment: true,
           }}
         >
           <Row gutter={16}>
@@ -216,12 +218,8 @@ const PostCreate: React.FC = () => {
             name="content"
             rules={[{ required: true, message: '请输入文章内容' }]}
           >
-            <TextArea
-              placeholder="请输入文章内容（支持 Markdown 格式）"
-              rows={20}
-              showCount
-              maxLength={50000}
-            />
+            {/* 替换 TextArea 为 Markdown 编辑器 */}
+            <MDEditor height={400} />
           </Form.Item>
 
           <Form.Item label="文章摘要" name="summary">
@@ -229,7 +227,7 @@ const PostCreate: React.FC = () => {
               placeholder="请输入文章摘要（如果不填写，将自动从内容中提取）"
               rows={3}
               showCount
-              maxLength={500}
+              maxLength={100}
             />
           </Form.Item>
 
